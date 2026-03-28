@@ -1,20 +1,35 @@
 export function handleAssetImageError(event, hardFallbackUrl) {
   const imageElement = event.currentTarget;
   const currentSource = imageElement.getAttribute("src") || "";
+  const triedSources = (imageElement.dataset.triedSources || "")
+    .split("|")
+    .filter(Boolean);
+  const nextSources = [];
 
-  if (!imageElement.dataset.triedAltExtension) {
-    if (currentSource.includes(".png")) {
-      imageElement.dataset.triedAltExtension = "true";
-      imageElement.src = currentSource.replace(".png", ".jpg");
-      return;
-    }
-
-    if (currentSource.includes(".jpg")) {
-      imageElement.dataset.triedAltExtension = "true";
-      imageElement.src = currentSource.replace(".jpg", ".png");
-      return;
-    }
+  if (currentSource.includes(".png")) {
+    nextSources.push(currentSource.replace(".png", ".jpg"));
+    nextSources.push(currentSource.replace(".png", ".webp"));
   }
 
-  imageElement.src = hardFallbackUrl;
+  if (currentSource.includes(".jpg")) {
+    nextSources.push(currentSource.replace(".jpg", ".png"));
+    nextSources.push(currentSource.replace(".jpg", ".webp"));
+  }
+
+  if (currentSource.includes(".webp")) {
+    nextSources.push(currentSource.replace(".webp", ".jpg"));
+    nextSources.push(currentSource.replace(".webp", ".png"));
+  }
+
+  const nextCandidate = nextSources.find((source) => !triedSources.includes(source));
+
+  if (nextCandidate) {
+    imageElement.dataset.triedSources = [...triedSources, nextCandidate].join("|");
+    imageElement.src = nextCandidate;
+    return;
+  }
+
+  if (currentSource !== hardFallbackUrl) {
+    imageElement.src = hardFallbackUrl;
+  }
 }

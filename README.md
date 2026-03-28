@@ -23,7 +23,13 @@ travel/
 
 ```bash
 cd server
-copy .env.example .env
+cp .env.example .env
+```
+
+PowerShell alternative:
+
+```powershell
+Copy-Item .env.example .env
 ```
 
 2. Update `DATABASE_URL` in `server/.env` with your Neon connection string.
@@ -59,6 +65,12 @@ cd client
 cp .env.example .env
 ```
 
+PowerShell alternative:
+
+```powershell
+Copy-Item .env.example .env
+```
+
 2. Install and run:
 
 ```bash
@@ -88,13 +100,13 @@ npm run db:migrate --prefix server
 
 Place provided source images inside:
 
-- `client/public/assets/image_0.png`
-- `client/public/assets/image_1.png`
-- `client/public/assets/image_2.png`
-- `client/public/assets/image_3.png`
-- `client/public/assets/image_4.png`
-- `client/public/assets/image_5.png`
-- `client/public/assets/image_6.png`
+- `client/public/assets/image_0.png` or `image_0.jpg`
+- `client/public/assets/image_1.png` or `image_1.jpg`
+- `client/public/assets/image_2.png` or `image_2.jpg`
+- `client/public/assets/image_3.png` or `image_3.jpg`
+- `client/public/assets/image_4.png` or `image_4.jpg`
+- `client/public/assets/image_5.png` or `image_5.jpg`
+- `client/public/assets/image_6.png` or `image_6.jpg` or `image_6.webp`
 
 The UI is prewired to these asset paths and includes fallback imagery if files are missing.
 

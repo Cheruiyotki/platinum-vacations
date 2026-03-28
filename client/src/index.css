@@ -22,3 +22,7 @@ body {
     ),
     radial-gradient(circle at 0 100%, rgba(30, 215, 96, 0.12), transparent 34%);
 }
+
+section[id] {
+  scroll-margin-top: 7rem;
+}

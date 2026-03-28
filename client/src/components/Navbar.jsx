@@ -15,10 +15,11 @@ function Navbar({ onNavigate }) {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Background appears after scrolling 50px down
+      // Background appears after scrolling 50px down.
       setHasScrolled(window.scrollY > 50);
     };
 
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -60,7 +61,11 @@ function Navbar({ onNavigate }) {
           
           {/* Logo & Branding */}
           <button 
-            onClick={() => onNavigate("home")} 
+            type="button"
+            onClick={() => {
+              onNavigate("home");
+              setIsMobileMenuOpen(false);
+            }}
             className="flex items-center gap-3 group"
           >
             <img
@@ -69,7 +74,12 @@ function Navbar({ onNavigate }) {
               className={`h-12 w-12 rounded-full border object-cover transition-all ${
                 hasScrolled ? "border-neutral shadow-sm" : "border-white/40"
               }`}
-              onError={(e) => handleAssetImageError(e, "https://via.placeholder.com/150")}
+              onError={(event) =>
+                handleAssetImageError(
+                  event,
+                  "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=200&q=80"
+                )
+              }
             />
             <div className="text-left">
               <p className={`font-heading text-sm font-black uppercase tracking-tight transition-colors duration-300 ${brandTextColor}`}>
@@ -86,6 +96,7 @@ function Navbar({ onNavigate }) {
             {navItems.map((item) => (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => onNavigate(item.id)}
                 className={`text-xs font-bold uppercase tracking-widest transition-all duration-300 ${linkTextColor}`}
               >
