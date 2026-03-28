@@ -1,0 +1,28 @@
+{
+  "name": "platinum-vacations-api",
+  "version": "1.0.0",
+  "description": "Backend API for Platinum Vacations SPA",
+  "main": "src/server.js",
+  "scripts": {
+    "db:migrate": "node src/db/migrate.js",
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js"
+  },
+  "keywords": [
+    "express",
+    "postgres",
+    "travel"
+  ],
+  "author": "Platinum Vacations",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "pg": "^8.13.1",
+    "platinum-vacations-pern": "file:.."
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
