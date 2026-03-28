@@ -1,11 +1,18 @@
+import { handleAssetImageError } from "../utils/imageFallback";
+
 function HeroSection({ onViewPackages }) {
   return (
     <section id="home" className="relative isolate overflow-hidden">
-      <div
-        className="absolute inset-0 -z-20 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/assets/image_1.png')"
-        }}
+      <img
+        src="/assets/image_1.png"
+        alt="Platinum Vacations hero resort view"
+        className="absolute inset-0 -z-20 h-full w-full object-cover"
+        onError={(event) =>
+          handleAssetImageError(
+            event,
+            "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80"
+          )
+        }
       />
       <div className="absolute inset-0 -z-10 bg-hero-overlay" />
       <div className="mx-auto flex min-h-[72vh] w-full max-w-7xl items-center px-4 py-16 md:px-6">

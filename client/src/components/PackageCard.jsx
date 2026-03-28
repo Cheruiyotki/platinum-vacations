@@ -1,4 +1,5 @@
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { handleAssetImageError } from "../utils/imageFallback";
 
 function PackageCard({ travelPackage }) {
   const ctaText = `Book with KES ${travelPackage.deposit_required.toLocaleString()} Deposit`;
@@ -16,10 +17,12 @@ function PackageCard({ travelPackage }) {
           src={travelPackage.image_url}
           alt={travelPackage.title}
           className="h-full w-full object-cover"
-          onError={(event) => {
-            event.currentTarget.src =
-              "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80";
-          }}
+          onError={(event) =>
+            handleAssetImageError(
+              event,
+              "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80"
+            )
+          }
         />
         <div className="absolute inset-0 bg-gradient-to-t from-secondary/75 to-transparent" />
         <div className="absolute bottom-4 left-4 right-4">

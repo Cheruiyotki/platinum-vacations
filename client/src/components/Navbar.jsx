@@ -1,4 +1,5 @@
 import { FaWhatsapp } from "react-icons/fa";
+import { handleAssetImageError } from "../utils/imageFallback";
 
 const navItems = [
   { id: "home", label: "Home" },
@@ -22,10 +23,12 @@ function Navbar({ onNavigate }) {
               src="/assets/image_0.png"
               alt="Platinum Vacations logo"
               className="h-11 w-11 rounded-full border border-neutral object-cover"
-              onError={(event) => {
-                event.currentTarget.src =
-                  "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=200&q=80";
-              }}
+              onError={(event) =>
+                handleAssetImageError(
+                  event,
+                  "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=200&q=80"
+                )
+              }
             />
             <div className="text-left">
               <p className="font-heading text-sm font-extrabold uppercase tracking-wide text-primary">

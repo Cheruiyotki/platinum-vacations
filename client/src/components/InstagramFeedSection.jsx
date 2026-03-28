@@ -1,3 +1,5 @@
+import { handleAssetImageError } from "../utils/imageFallback";
+
 const mockPosts = [
   "/assets/image_1.png",
   "/assets/image_3.png",
@@ -29,10 +31,12 @@ function InstagramFeedSection() {
                 src={src}
                 alt={`Platinum Vacations post ${index + 1}`}
                 className="h-full w-full object-cover transition duration-300 group-hover:scale-110"
-                onError={(event) => {
-                  event.currentTarget.src =
-                    "https://images.unsplash.com/photo-1526779259212-939e64788e3c?auto=format&fit=crop&w=800&q=80";
-                }}
+                onError={(event) =>
+                  handleAssetImageError(
+                    event,
+                    "https://images.unsplash.com/photo-1526779259212-939e64788e3c?auto=format&fit=crop&w=800&q=80"
+                  )
+                }
               />
               <div className="absolute inset-0 bg-gradient-to-t from-secondary/60 to-transparent opacity-0 transition group-hover:opacity-100" />
             </div>
