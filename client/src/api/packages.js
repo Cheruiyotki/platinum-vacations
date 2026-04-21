@@ -1,6 +1,6 @@
+import { API_BASE } from "./base";
+
 const FALLBACK_IMAGE = "/assets/image_6.webp";
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? "http://localhost:5000" : "");
-const API_BASE = apiBaseUrl.replace(/\/$/, "");
 
 function normalizeList(value) {
   if (!Array.isArray(value)) {

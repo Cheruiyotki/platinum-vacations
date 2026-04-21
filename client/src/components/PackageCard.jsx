@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { FaCheckCircle, FaTimes, FaTimesCircle, FaWhatsapp } from "react-icons/fa";
+import { FaCheckCircle, FaSpinner, FaTimes, FaTimesCircle } from "react-icons/fa";
+import { requestStkPush } from "../api/payments";
 import { handleAssetImageError } from "../utils/imageFallback";
 
 function PackageCard({ travelPackage }) {
@@ -18,18 +19,12 @@ function PackageCard({ travelPackage }) {
   const [paymentOption, setPaymentOption] = useState("space");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [amount, setAmount] = useState(String(minimumBookingAmount));
+  const [paymentError, setPaymentError] = useState("");
+  const [paymentMessage, setPaymentMessage] = useState("");
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
   const requiredAmount = paymentOption === "full" ? fullAdventureAmount : minimumBookingAmount;
   const parsedAmount = Number.parseFloat(amount);
   const isAmountValid = Number.isFinite(parsedAmount) && parsedAmount >= requiredAmount;
-  const whatsappMessage = encodeURIComponent(
-    [
-      "Hello Platinum Vacations, I would like to pay for this adventure.",
-      `Adventure: ${travelPackage.title}`,
-      `Payment option: ${paymentOption === "full" ? "Full amount" : "Book space"}`,
-      `Amount to pay: KES ${isAmountValid ? parsedAmount.toLocaleString() : requiredAmount.toLocaleString()}`,
-      `Phone number: ${phoneNumber || "Not provided"}`
-    ].join("\n")
-  );
 
   useEffect(() => {
     if (!isPaymentOpen) {
@@ -48,6 +43,8 @@ function PackageCard({ travelPackage }) {
     setPaymentOption("space");
     setAmount(String(minimumBookingAmount));
     setPhoneNumber("");
+    setPaymentError("");
+    setPaymentMessage("");
     setIsPaymentOpen(true);
   };
 
@@ -58,6 +55,43 @@ function PackageCard({ travelPackage }) {
   const handlePaymentOptionChange = (nextOption) => {
     setPaymentOption(nextOption);
     setAmount(String(nextOption === "full" ? fullAdventureAmount : minimumBookingAmount));
+    setPaymentError("");
+    setPaymentMessage("");
+  };
+
+  const handlePaymentSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!phoneNumber.trim()) {
+      setPaymentError("Enter the Safaricom number that should receive the PIN prompt.");
+      return;
+    }
+
+    if (!isAmountValid) {
+      setPaymentError(`Enter at least KES ${requiredAmount.toLocaleString()} to continue.`);
+      return;
+    }
+
+    try {
+      setIsSubmittingPayment(true);
+      setPaymentError("");
+      setPaymentMessage("");
+
+      const response = await requestStkPush({
+        packageSlug: travelPackage.slug,
+        paymentOption,
+        amount: Math.round(parsedAmount),
+        phoneNumber
+      });
+
+      setPaymentMessage(
+        response.message || "STK push sent successfully. Check your phone and enter your M-Pesa PIN."
+      );
+    } catch (error) {
+      setPaymentError(error.message || "Failed to send the M-Pesa prompt.");
+    } finally {
+      setIsSubmittingPayment(false);
+    }
   };
 
   return (
@@ -248,7 +282,8 @@ function PackageCard({ travelPackage }) {
                   </div>
                 </div>
 
-                <div className="mt-6 grid gap-4">
+                <form className="mt-6" onSubmit={handlePaymentSubmit}>
+                  <div className="grid gap-4">
                   <label className="block">
                     <span className="text-sm font-semibold uppercase tracking-[0.2em] text-secondary/55">
                       Enter Amount
@@ -258,7 +293,11 @@ function PackageCard({ travelPackage }) {
                       min={requiredAmount}
                       step="1"
                       value={amount}
-                      onChange={(event) => setAmount(event.target.value)}
+                      onChange={(event) => {
+                        setAmount(event.target.value);
+                        setPaymentError("");
+                        setPaymentMessage("");
+                      }}
                       className="mt-2 w-full rounded-2xl border border-neutral bg-accent px-4 py-3 text-base font-semibold text-secondary outline-none transition focus:border-primary"
                       placeholder={`KES ${requiredAmount.toLocaleString()}`}
                     />
@@ -271,38 +310,52 @@ function PackageCard({ travelPackage }) {
                     <input
                       type="tel"
                       value={phoneNumber}
-                      onChange={(event) => setPhoneNumber(event.target.value)}
+                      onChange={(event) => {
+                        setPhoneNumber(event.target.value);
+                        setPaymentError("");
+                        setPaymentMessage("");
+                      }}
                       className="mt-2 w-full rounded-2xl border border-neutral bg-accent px-4 py-3 text-base font-semibold text-secondary outline-none transition focus:border-primary"
                       placeholder="07XXXXXXXX"
                     />
                   </label>
-                </div>
+                  </div>
 
-                <div className="mt-5 rounded-2xl bg-neutral px-4 py-4 text-sm text-secondary/75">
-                  {paymentOption === "full"
-                    ? `Your full payment for this adventure is KES ${fullAdventureAmount.toLocaleString()}.`
-                    : `To reserve your space, enter at least KES ${minimumBookingAmount.toLocaleString()}.`}
-                </div>
+                  <div className="mt-5 rounded-2xl bg-neutral px-4 py-4 text-sm text-secondary/75">
+                    {paymentOption === "full"
+                      ? `Your full payment for this adventure is KES ${fullAdventureAmount.toLocaleString()}.`
+                      : `To reserve your space, enter at least KES ${minimumBookingAmount.toLocaleString()}.`}
+                  </div>
 
-                {!isAmountValid ? (
-                  <p className="mt-3 text-sm font-semibold text-primary">
-                    Enter at least KES {requiredAmount.toLocaleString()} to continue with this option.
-                  </p>
-                ) : null}
+                  {!isAmountValid ? (
+                    <p className="mt-3 text-sm font-semibold text-primary">
+                      Enter at least KES {requiredAmount.toLocaleString()} to continue with this option.
+                    </p>
+                  ) : null}
 
-                <a
-                  href={`https://wa.me/254740629899?text=${whatsappMessage}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-white transition ${
-                    isAmountValid && phoneNumber.trim()
-                      ? "bg-primary hover:bg-secondary"
-                      : "pointer-events-none bg-primary/45"
-                  }`}
-                >
-                  <FaWhatsapp className="text-base" />
-                  Continue To Pay
-                </a>
+                  {paymentError ? (
+                    <p className="mt-3 rounded-2xl bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
+                      {paymentError}
+                    </p>
+                  ) : null}
+
+                  {paymentMessage ? (
+                    <p className="mt-3 rounded-2xl bg-success/15 px-4 py-3 text-sm font-semibold text-secondary">
+                      {paymentMessage}
+                    </p>
+                  ) : null}
+
+                  <button
+                    type="submit"
+                    disabled={isSubmittingPayment}
+                    className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-white transition ${
+                      isSubmittingPayment ? "bg-primary/70" : "bg-primary hover:bg-secondary"
+                    }`}
+                  >
+                    {isSubmittingPayment ? <FaSpinner className="animate-spin text-base" /> : null}
+                    Continue To Pay
+                  </button>
+                </form>
               </div>
             </div>
           </div>

@@ -41,6 +41,20 @@ DATABASE_URL=postgresql://USER:PASSWORD@EP-XXXX-XXXX-pooler.us-east-1.aws.neon.t
 PGSSLMODE=require
 ```
 
+For M-Pesa STK Push, also configure these in `server/.env`:
+
+```env
+MPESA_ENV=sandbox
+MPESA_CONSUMER_KEY=your_daraja_consumer_key
+MPESA_CONSUMER_SECRET=your_daraja_consumer_secret
+MPESA_SHORTCODE=4619122
+MPESA_PASSKEY=your_lipa_na_mpesa_online_passkey
+MPESA_CALLBACK_URL=https://your-public-domain.com/api/payments/callback
+MPESA_TRANSACTION_TYPE=CustomerBuyGoodsOnline
+```
+
+`MPESA_CALLBACK_URL` must be a public HTTPS URL that Safaricom can reach.
+
 3. Install backend dependencies and run schema + seed directly against Neon:
 
 ```bash
@@ -113,3 +127,4 @@ The UI is prewired to these asset paths and includes fallback imagery if files a
 ## 6) API Endpoint
 
 - `GET /api/packages` -> returns seeded travel packages with includes/excludes JSON arrays and deposit requirements.
+- `POST /api/payments/stk-push` -> sends a Safaricom STK Push prompt to the selected phone number.
