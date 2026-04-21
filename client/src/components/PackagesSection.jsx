@@ -8,14 +8,14 @@ function PackagesSection() {
     <section id="packages" className="bg-secondary py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-4 md:px-6">
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-success">
-          Current Packages
+          Current Adventures
         </p>
         <h2 className="mt-2 font-heading text-3xl font-extrabold text-white md:text-4xl">
           Fresh Adventures You Can Book Right Now
         </h2>
 
         {loading ? (
-          <p className="mt-8 text-sm text-white/80">Loading packages...</p>
+          <p className="mt-8 text-sm text-white/80">Loading adventures...</p>
         ) : null}
 
         {error ? (
@@ -34,7 +34,7 @@ function PackagesSection() {
 
         {!loading && !error && packages.length === 0 ? (
           <p className="mt-8 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white/85">
-            No packages are available right now. Please check back shortly.
+            No adventures are available right now. Please check back shortly.
           </p>
         ) : null}
       </div>

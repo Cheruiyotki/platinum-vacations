@@ -27,7 +27,7 @@ function normalizePackage(travelPackage, index) {
     title:
       typeof safePackage.title === "string" && safePackage.title.trim()
         ? safePackage.title.trim()
-        : "Untitled Package",
+        : "Untitled Adventure",
     cost:
       typeof safePackage.cost === "string" && safePackage.cost.trim()
         ? safePackage.cost.trim()

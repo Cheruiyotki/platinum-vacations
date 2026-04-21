@@ -4,7 +4,7 @@ import { handleAssetImageError } from "../utils/imageFallback";
 
 const navItems = [
   { id: "home", label: "Home" },
-  { id: "packages", label: "Packages" },
+  { id: "packages", label: "Adventures" },
   { id: "about", label: "About" },
   { id: "pay-now", label: "Pay Now" }
 ];

@@ -16,7 +16,7 @@ INSERT INTO packages (
 VALUES
   (
     'mombasa-malindi-summer-tides',
-    'Mombasa (Malindi) Summer Tides Package',
+    'Mombasa (Malindi) Summer Tides Adventure',
     'KES 21,999',
     '2nd - 5th July',
     '4 DAYS 3 NIGHTS',
@@ -39,6 +39,81 @@ VALUES
     'HB = Breakfast and Supper.',
     '/assets/image_1.png',
     5000
+  ),
+  (
+    'mount-kenya-summit-trail',
+    'Mount Kenya Summit Trail Adventure',
+    'KES 18,500',
+    '12th - 14th June',
+    '3 DAYS 2 NIGHTS',
+    'Weekend Escape',
+    'A scenic mountain hike with expert guides and full camp support.',
+    '[
+      "Transport from Nairobi and back",
+      "2 Nights mountain camp accommodation",
+      "Park entry fees",
+      "Professional mountain guide",
+      "Chef-prepared meals on the mountain"
+    ]'::jsonb,
+    '[
+      "Personal hiking gear",
+      "Travel insurance",
+      "Additional snacks and drinks"
+    ]'::jsonb,
+    'Nairobi CBD, Archives Stage',
+    'Ideal for adventurous beginners with moderate fitness.',
+    '/assets/image_2.jpg',
+    6000
+  ),
+  (
+    'mt-satima-sunrise-hike',
+    'Mt. Satima Sunrise Hike Adventure',
+    'KES 4,500',
+    '28th June',
+    '1 DAY ADVENTURE',
+    'Sunrise Special',
+    'Catch the sunrise from the highest peak in the Aberdares with an early morning group departure.',
+    '[
+      "Round-trip transport",
+      "Guided hike experience",
+      "Packed breakfast",
+      "Professional photography moments",
+      "Mineral water"
+    ]'::jsonb,
+    '[
+      "Lunch",
+      "Personal hiking equipment",
+      "Any private expenses"
+    ]'::jsonb,
+    'Kencom, Nairobi',
+    'Warm layers are recommended for the early morning ascent.',
+    '/assets/image_4.jpg',
+    1500
+  ),
+  (
+    'maasai-mara-big-five-safari',
+    'Maasai Mara Big Five Safari Adventure',
+    'KES 32,999',
+    '18th - 20th July',
+    '3 DAYS 2 NIGHTS',
+    'Safari Favorite',
+    'Experience game drives, dramatic savannah views, and unforgettable wildlife encounters.',
+    '[
+      "Return transport in a safari van",
+      "2 Nights accommodation",
+      "Meals on full board basis",
+      "Game drives in Maasai Mara",
+      "Driver guide services"
+    ]'::jsonb,
+    '[
+      "Maasai village visit fee",
+      "Drinks and personal items",
+      "Travel insurance"
+    ]'::jsonb,
+    'Nairobi CBD, Archives Stage',
+    'Perfect for travelers who want a classic Kenyan safari experience.',
+    '/assets/image_5.jpg',
+    8000
   ),
   (
     'wrc-naivasha-experience',

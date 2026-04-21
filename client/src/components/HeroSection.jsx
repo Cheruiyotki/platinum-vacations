@@ -31,7 +31,7 @@ function HeroSection({ onViewPackages }) {
             onClick={onViewPackages}
             className="mt-8 rounded-full bg-primary px-7 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-secondary"
           >
-            View Packages
+            View Adventures
           </button>
         </div>
       </div>

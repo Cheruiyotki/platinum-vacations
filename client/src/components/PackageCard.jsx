@@ -51,7 +51,7 @@ function PackageCard({ travelPackage }) {
 
         <div className="mt-6">
           <p className="font-heading text-base font-extrabold uppercase text-secondary">
-            Package Includes
+            Adventure Includes
           </p>
           <ul className="mt-3 space-y-2">
             {includedItems.map((item) => (
@@ -65,7 +65,7 @@ function PackageCard({ travelPackage }) {
 
         <div className="mt-6">
           <p className="font-heading text-base font-extrabold uppercase text-secondary">
-            Package Excludes
+            Adventure Excludes
           </p>
           <ul className="mt-3 space-y-2">
             {excludedItems.map((item) => (
@@ -88,7 +88,9 @@ function PackageCard({ travelPackage }) {
         ) : null}
 
         <a
-          href="https://wa.me/254740629899?text=Hello%20Platinum%20Vacations%2C%20I%20would%20like%20to%20book%20this%20package."
+          href={`https://wa.me/254740629899?text=${encodeURIComponent(
+            `Hello Platinum Vacations, I would like to book the ${travelPackage.title}.`
+          )}`}
           target="_blank"
           rel="noreferrer"
           className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary"
