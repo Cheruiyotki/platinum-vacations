@@ -20,7 +20,7 @@ export function PackageProvider({ children }) {
         }
       } catch (err) {
         if (isMounted) {
-          setError(err.message || "Unable to fetch packages.");
+          setError(err.message || "Unable to fetch adventures.");
         }
       } finally {
         if (isMounted) {

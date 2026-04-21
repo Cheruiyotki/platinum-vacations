@@ -19,7 +19,10 @@ function normalizeDeposit(value) {
 
 function normalizePackage(travelPackage, index) {
   const safePackage = typeof travelPackage === "object" && travelPackage !== null ? travelPackage : {};
-  const safeSlug = typeof safePackage.slug === "string" && safePackage.slug.trim() ? safePackage.slug.trim() : `package-${index + 1}`;
+  const safeSlug =
+    typeof safePackage.slug === "string" && safePackage.slug.trim()
+      ? safePackage.slug.trim()
+      : `adventure-${index + 1}`;
 
   return {
     id: safePackage.id ?? safeSlug,
@@ -68,13 +71,13 @@ export async function fetchPackages() {
   const response = await fetch(`${API_BASE}/api/packages`);
 
   if (!response.ok) {
-    throw new Error("Could not load packages at this time.");
+    throw new Error("Could not load adventures at this time.");
   }
 
   const data = await response.json();
 
   if (!Array.isArray(data)) {
-    throw new Error("Invalid package data received.");
+    throw new Error("Invalid adventure data received.");
   }
 
   return data.map(normalizePackage);

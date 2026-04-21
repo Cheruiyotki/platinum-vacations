@@ -5,7 +5,10 @@ function PackageCard({ travelPackage }) {
   const depositAmount = Number.isFinite(travelPackage.deposit_required)
     ? travelPackage.deposit_required
     : 0;
-  const ctaText = `Book with KES ${depositAmount.toLocaleString()} Deposit`;
+  const minimumBookingAmount = Math.max(
+    depositAmount,
+    Math.ceil((Number.parseFloat(String(travelPackage.cost).replace(/[^0-9.]/g, "")) || 0) / 2)
+  );
   const includedItems = Array.isArray(travelPackage.includes_json) ? travelPackage.includes_json : [];
   const excludedItems = Array.isArray(travelPackage.excludes_json) ? travelPackage.excludes_json : [];
 
@@ -20,7 +23,7 @@ function PackageCard({ travelPackage }) {
       <div className="relative h-56 w-full overflow-hidden">
         <img
           src={travelPackage.image_url}
-          alt={travelPackage.title || "Travel package image"}
+          alt={travelPackage.title || "Travel adventure image"}
           className="h-full w-full object-cover"
           onError={(event) =>
             handleAssetImageError(
@@ -87,6 +90,11 @@ function PackageCard({ travelPackage }) {
           <p className="mt-4 text-sm font-semibold text-secondary/75">{travelPackage.note}</p>
         ) : null}
 
+        <p className="mt-6 rounded-xl bg-neutral px-4 py-3 text-sm font-medium text-secondary/80">
+          Pay in full or book your space with at least KES {minimumBookingAmount.toLocaleString()}.
+          Complete the balance by the day before the trip.
+        </p>
+
         <a
           href={`https://wa.me/254740629899?text=${encodeURIComponent(
             `Hello Platinum Vacations, I would like to book the ${travelPackage.title}.`
@@ -95,7 +103,7 @@ function PackageCard({ travelPackage }) {
           rel="noreferrer"
           className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary"
         >
-          {ctaText}
+          Book
         </a>
       </div>
     </article>
