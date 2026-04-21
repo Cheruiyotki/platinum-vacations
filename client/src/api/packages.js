@@ -63,7 +63,8 @@ function normalizePackage(travelPackage, index) {
       typeof safePackage.image_url === "string" && safePackage.image_url.trim()
         ? safePackage.image_url.trim()
         : FALLBACK_IMAGE,
-    deposit_required: normalizeDeposit(safePackage.deposit_required)
+    deposit_required: normalizeDeposit(safePackage.deposit_required),
+    hidden: Boolean(safePackage.hidden)
   };
 }
 
@@ -81,4 +82,84 @@ export async function fetchPackages() {
   }
 
   return data.map(normalizePackage);
+}
+
+export async function fetchAdminPackages() {
+  const response = await fetch(`${API_BASE}/api/packages/admin`);
+
+  if (!response.ok) {
+    throw new Error("Could not load admin adventures at this time.");
+  }
+
+  const data = await response.json();
+
+  if (!Array.isArray(data)) {
+    throw new Error("Invalid admin adventure data received.");
+  }
+
+  return data.map(normalizePackage);
+}
+
+export async function createPackage(payload) {
+  const response = await fetch(`${API_BASE}/api/packages`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to create adventure.");
+  }
+
+  return normalizePackage(data, 0);
+}
+
+export async function updatePackage(id, payload) {
+  const response = await fetch(`${API_BASE}/api/packages/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to update adventure.");
+  }
+
+  return normalizePackage(data, 0);
+}
+
+export async function togglePackageVisibility(id) {
+  const response = await fetch(`${API_BASE}/api/packages/${id}/visibility`, {
+    method: "PATCH"
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to update adventure visibility.");
+  }
+
+  return normalizePackage(data, 0);
+}
+
+export async function deletePackage(id) {
+  const response = await fetch(`${API_BASE}/api/packages/${id}`, {
+    method: "DELETE"
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to delete adventure.");
+  }
+
+  return data;
 }

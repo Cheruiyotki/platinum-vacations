@@ -8,39 +8,29 @@ export function PackageProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadPackages() {
-      try {
-        const data = await fetchPackages();
-        if (isMounted) {
-          setPackages(data);
-          setError("");
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(err.message || "Unable to fetch adventures.");
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
+  const loadPackages = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchPackages();
+      setPackages(data);
+      setError("");
+    } catch (err) {
+      setError(err.message || "Unable to fetch adventures.");
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
     loadPackages();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
   const value = useMemo(
     () => ({
       packages,
       loading,
-      error
+      error,
+      refreshPackages: loadPackages
     }),
     [packages, loading, error]
   );

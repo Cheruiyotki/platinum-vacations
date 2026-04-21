@@ -103,7 +103,7 @@ function PackageCard({ travelPackage }) {
           </span>
         ) : null}
 
-        <div className="relative h-56 w-full overflow-hidden">
+        <div className="relative h-48 w-full overflow-hidden">
           <img
             src={travelPackage.image_url}
             alt={travelPackage.title || "Travel adventure image"}
@@ -129,17 +129,17 @@ function PackageCard({ travelPackage }) {
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col p-6">
+        <div className="flex flex-1 flex-col p-5">
           <p className="font-heading text-3xl font-black text-primary">{travelPackage.cost}</p>
           {travelPackage.description ? (
             <p className="mt-1 text-sm font-medium text-secondary/70">{travelPackage.description}</p>
           ) : null}
 
-          <div className="mt-6">
+          <div className="mt-5">
             <p className="font-heading text-base font-extrabold uppercase text-secondary">
               Adventure Includes
             </p>
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-2.5 space-y-1.5">
               {includedItems.map((item) => (
                 <li key={item} className="flex items-start gap-2 text-sm text-secondary/90">
                   <FaCheckCircle className="mt-[2px] shrink-0 text-success" />
@@ -149,11 +149,11 @@ function PackageCard({ travelPackage }) {
             </ul>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-5">
             <p className="font-heading text-base font-extrabold uppercase text-secondary">
               Adventure Excludes
             </p>
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-2.5 space-y-1.5">
               {excludedItems.map((item) => (
                 <li key={item} className="flex items-start gap-2 text-sm text-secondary/90">
                   <FaTimesCircle className="mt-[2px] shrink-0 text-primary" />
@@ -164,7 +164,7 @@ function PackageCard({ travelPackage }) {
           </div>
 
           {travelPackage.pickup_point ? (
-            <p className="mt-6 rounded-xl bg-secondary px-4 py-3 text-sm font-medium text-white">
+            <p className="mt-5 rounded-xl bg-secondary px-4 py-3 text-sm font-medium text-white">
               Pickup Point: <span className="font-bold">{travelPackage.pickup_point}</span>
             </p>
           ) : null}
@@ -173,7 +173,7 @@ function PackageCard({ travelPackage }) {
             <p className="mt-4 text-sm font-semibold text-secondary/75">{travelPackage.note}</p>
           ) : null}
 
-          <p className="mt-6 rounded-xl bg-neutral px-4 py-3 text-sm font-medium text-secondary/80">
+          <p className="mt-5 rounded-xl bg-neutral px-4 py-3 text-sm font-medium text-secondary/80">
             Pay in full or book your space with at least KES {minimumBookingAmount.toLocaleString()}.
             Complete the balance by the day before the trip.
           </p>
@@ -181,7 +181,7 @@ function PackageCard({ travelPackage }) {
           <button
             type="button"
             onClick={openPaymentCard}
-            className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary"
+            className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary"
           >
             Book
           </button>
