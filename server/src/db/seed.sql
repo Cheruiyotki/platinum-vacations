@@ -156,3 +156,46 @@ SET
   image_url = EXCLUDED.image_url,
   deposit_required = EXCLUDED.deposit_required,
   updated_at = NOW();
+
+INSERT INTO reviews (name, review_text, rating, approved)
+SELECT *
+FROM (
+  VALUES
+    (
+      'Sharon W.',
+      'The trip was well organized, communication was smooth, and the whole experience felt worth it from start to finish.',
+      5,
+      TRUE
+    ),
+    (
+      'Brian K.',
+      'I loved the flexible payment plan and how easy it was to secure my spot before clearing the balance later.',
+      5,
+      TRUE
+    ),
+    (
+      'Mercy N.',
+      'Friendly team, beautiful destinations, and great coordination on the day of travel. I would book again.',
+      5,
+      TRUE
+    ),
+    (
+      'Dennis M.',
+      'The payment process was simple and the team kept us updated before the trip.',
+      4,
+      FALSE
+    ),
+    (
+      'Faith G.',
+      'Pickup was well communicated and the whole adventure felt smooth and enjoyable.',
+      5,
+      TRUE
+    ),
+    (
+      'Kelvin T.',
+      'Nice planning, fair pricing, and a very professional travel experience overall.',
+      5,
+      TRUE
+    )
+) AS seeded_reviews(name, review_text, rating, approved)
+WHERE NOT EXISTS (SELECT 1 FROM reviews);

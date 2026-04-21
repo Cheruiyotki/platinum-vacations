@@ -1,40 +1,53 @@
-import { FaQuoteLeft, FaStar } from "react-icons/fa";
+import { useState } from "react";
+import { FaPaperPlane, FaQuoteLeft, FaSpinner, FaStar } from "react-icons/fa";
+import { createReview } from "../api/reviews";
 import { usePackages } from "../context/PackageContext";
-
-const reviews = [
-  {
-    name: "Sharon W.",
-    text: "The trip was well organized, communication was smooth, and the whole experience felt worth it from start to finish."
-  },
-  {
-    name: "Brian K.",
-    text: "I loved the flexible payment plan and how easy it was to secure my spot before clearing the balance later."
-  },
-  {
-    name: "Mercy N.",
-    text: "Friendly team, beautiful destinations, and great coordination on the day of travel. I would book again."
-  },
-  {
-    name: "Dennis M.",
-    text: "The payment process was simple and the team kept us updated before the trip."
-  },
-  {
-    name: "Faith G.",
-    text: "Pickup was well communicated and the whole adventure felt smooth and enjoyable."
-  },
-  {
-    name: "Kelvin T.",
-    text: "Nice planning, fair pricing, and a very professional travel experience overall."
-  }
-];
+import { useReviews } from "../context/ReviewContext";
 
 function PaymentInfoSection() {
   const { packages } = usePackages();
+  const { reviews, loading: reviewsLoading, error: reviewsError, refreshReviews } = useReviews();
+  const [reviewForm, setReviewForm] = useState({
+    name: "",
+    rating: 5,
+    review_text: ""
+  });
+  const [reviewMessage, setReviewMessage] = useState("");
+  const [reviewError, setReviewError] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const mombasaDeposit =
     packages.find((pkg) => pkg.slug === "mombasa-malindi-summer-tides")?.deposit_required ?? 5000;
   const wrcDeposit =
     packages.find((pkg) => pkg.slug === "wrc-naivasha-experience")?.deposit_required ?? 1000;
+
+  const handleReviewSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!reviewForm.name.trim() || !reviewForm.review_text.trim()) {
+      setReviewError("Name and review message are required.");
+      return;
+    }
+
+    try {
+      setIsSubmittingReview(true);
+      setReviewError("");
+      setReviewMessage("");
+
+      const response = await createReview(reviewForm);
+      setReviewMessage(response.message);
+      setReviewForm({
+        name: "",
+        rating: 5,
+        review_text: ""
+      });
+      await refreshReviews();
+    } catch (error) {
+      setReviewError(error.message || "Failed to submit review.");
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   return (
     <section id="pay-now" className="py-12 md:py-16">
@@ -101,27 +114,144 @@ function PaymentInfoSection() {
               What Travelers Say
             </h3>
             <p className="mt-2 text-sm text-secondary/70">
-              A few kind words from people who have traveled with Platinum Vacations.
+              Approved reviews from travelers who have experienced Platinum Vacations.
             </p>
 
+            {reviewsError ? (
+              <p className="mt-4 rounded-2xl bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
+                {reviewsError}
+              </p>
+            ) : null}
+
             <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {reviewsLoading ? (
+                <p className="text-sm text-secondary/70">Loading reviews...</p>
+              ) : null}
+
+              {!reviewsLoading && reviews.length === 0 ? (
+                <p className="text-sm text-secondary/70">
+                  No approved reviews are live yet. Be the first to leave one below.
+                </p>
+              ) : null}
+
               {reviews.map((review) => (
                 <article
-                  key={review.name}
+                  key={review.id}
                   className="rounded-2xl border border-neutral bg-accent px-4 py-4 shadow-sm"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-1.5 text-success">
-                      {Array.from({ length: 5 }).map((_, index) => (
-                        <FaStar key={`${review.name}-${index}`} className="text-xs" />
+                      {Array.from({ length: review.rating }).map((_, index) => (
+                        <FaStar key={`${review.id}-${index}`} className="text-xs" />
                       ))}
                     </div>
                     <FaQuoteLeft className="text-sm text-primary/30" />
                   </div>
-                  <p className="mt-3 text-sm leading-6 text-secondary/78">{review.text}</p>
+                  <p className="mt-3 text-sm leading-6 text-secondary/78">{review.review_text}</p>
                   <p className="mt-3 text-sm font-bold text-secondary">{review.name}</p>
                 </article>
               ))}
+            </div>
+
+            <div className="mt-6 rounded-3xl border border-neutral bg-accent p-5">
+              <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-secondary/55">
+                    Add Review
+                  </p>
+                  <h4 className="mt-2 font-heading text-2xl font-black text-secondary">
+                    Share Your Feedback
+                  </h4>
+                </div>
+                <p className="text-sm text-secondary/65">
+                  Reviews are checked by admin before they appear on the website.
+                </p>
+              </div>
+
+              <form className="mt-5 grid gap-4 md:grid-cols-2" onSubmit={handleReviewSubmit}>
+                <label className="block">
+                  <span className="text-xs font-bold uppercase tracking-[0.22em] text-secondary/55">
+                    Your Name
+                  </span>
+                  <input
+                    value={reviewForm.name}
+                    onChange={(event) => {
+                      setReviewForm((currentForm) => ({ ...currentForm, name: event.target.value }));
+                      setReviewError("");
+                      setReviewMessage("");
+                    }}
+                    className="mt-2 w-full rounded-2xl border border-neutral bg-white px-4 py-3 text-sm outline-none transition focus:border-primary"
+                    placeholder="Enter your name"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-xs font-bold uppercase tracking-[0.22em] text-secondary/55">
+                    Rating
+                  </span>
+                  <select
+                    value={reviewForm.rating}
+                    onChange={(event) => {
+                      setReviewForm((currentForm) => ({
+                        ...currentForm,
+                        rating: Number(event.target.value)
+                      }));
+                      setReviewError("");
+                      setReviewMessage("");
+                    }}
+                    className="mt-2 w-full rounded-2xl border border-neutral bg-white px-4 py-3 text-sm outline-none transition focus:border-primary"
+                  >
+                    <option value={5}>5 Stars</option>
+                    <option value={4}>4 Stars</option>
+                    <option value={3}>3 Stars</option>
+                    <option value={2}>2 Stars</option>
+                    <option value={1}>1 Star</option>
+                  </select>
+                </label>
+
+                <label className="block md:col-span-2">
+                  <span className="text-xs font-bold uppercase tracking-[0.22em] text-secondary/55">
+                    Your Feedback
+                  </span>
+                  <textarea
+                    rows="4"
+                    value={reviewForm.review_text}
+                    onChange={(event) => {
+                      setReviewForm((currentForm) => ({
+                        ...currentForm,
+                        review_text: event.target.value
+                      }));
+                      setReviewError("");
+                      setReviewMessage("");
+                    }}
+                    className="mt-2 w-full rounded-2xl border border-neutral bg-white px-4 py-3 text-sm outline-none transition focus:border-primary"
+                    placeholder="Tell us how your adventure went..."
+                  />
+                </label>
+
+                {reviewError ? (
+                  <p className="md:col-span-2 rounded-2xl bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
+                    {reviewError}
+                  </p>
+                ) : null}
+
+                {reviewMessage ? (
+                  <p className="md:col-span-2 rounded-2xl bg-success/15 px-4 py-3 text-sm font-semibold text-secondary">
+                    {reviewMessage}
+                  </p>
+                ) : null}
+
+                <div className="md:col-span-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmittingReview}
+                    className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary"
+                  >
+                    {isSubmittingReview ? <FaSpinner className="animate-spin" /> : <FaPaperPlane />}
+                    {isSubmittingReview ? "Submitting..." : "Submit Review"}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

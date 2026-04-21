@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const packageRoutes = require("./routes/packageRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 const { hasDatabaseConfig } = require("./db/pool");
 const { hasMpesaConfig } = require("./services/mpesa");
 
@@ -26,6 +27,7 @@ app.get("/api/health", (_req, res) => {
 
 app.use("/api/packages", packageRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({ message: "Route not found" });

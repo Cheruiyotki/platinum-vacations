@@ -7,6 +7,11 @@ import {
   updatePackage
 } from "../api/packages";
 import {
+  deleteReview as deleteReviewRequest,
+  fetchAdminReviews,
+  toggleReviewApproval
+} from "../api/reviews";
+import {
   FaArrowLeft,
   FaArrowUp,
   FaBell,
@@ -33,6 +38,7 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { usePackages } from "../context/PackageContext";
+import { useReviews } from "../context/ReviewContext";
 
 const sidebarSections = [
   { id: "dashboard", label: "Dashboard", icon: FaChartLine },
@@ -47,45 +53,6 @@ const sidebarSections = [
   { id: "announcements", label: "Announcements", icon: FaBell },
   { id: "promos", label: "Promo Codes", icon: FaPercent },
   { id: "reports", label: "Reports", icon: FaReceipt }
-];
-
-const baseReviews = [
-  {
-    id: "review-1",
-    name: "Sharon W.",
-    text: "The trip was well organized, communication was smooth, and the whole experience felt worth it from start to finish.",
-    approved: true
-  },
-  {
-    id: "review-2",
-    name: "Brian K.",
-    text: "I loved the flexible payment plan and how easy it was to secure my spot before clearing the balance later.",
-    approved: true
-  },
-  {
-    id: "review-3",
-    name: "Mercy N.",
-    text: "Friendly team, beautiful destinations, and great coordination on the day of travel. I would book again.",
-    approved: true
-  },
-  {
-    id: "review-4",
-    name: "Dennis M.",
-    text: "The payment process was simple and the team kept us updated before the trip.",
-    approved: false
-  },
-  {
-    id: "review-5",
-    name: "Faith G.",
-    text: "Pickup was well communicated and the whole adventure felt smooth and enjoyable.",
-    approved: true
-  },
-  {
-    id: "review-6",
-    name: "Kelvin T.",
-    text: "Nice planning, fair pricing, and a very professional travel experience overall.",
-    approved: true
-  }
 ];
 
 const initialBookings = [
@@ -360,6 +327,7 @@ function parseList(text) {
 
 function AdminPage() {
   const { loading, refreshPackages } = usePackages();
+  const { refreshReviews } = useReviews();
   const [adventures, setAdventures] = useState([]);
   const [selectedAdventureId, setSelectedAdventureId] = useState("");
   const [adventureForm, setAdventureForm] = useState(getEmptyAdventureForm());
@@ -367,7 +335,11 @@ function AdminPage() {
   const [adventureActionLoading, setAdventureActionLoading] = useState(false);
   const [adventureStatus, setAdventureStatus] = useState("");
   const [adventureError, setAdventureError] = useState("");
-  const [reviews, setReviews] = useState(baseReviews);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [reviewActionLoading, setReviewActionLoading] = useState(false);
+  const [reviewError, setReviewError] = useState("");
+  const [reviewStatus, setReviewStatus] = useState("");
   const [bookings] = useState(initialBookings);
   const [payments] = useState(initialPayments);
   const [customers] = useState(initialCustomers);
@@ -401,6 +373,23 @@ function AdminPage() {
 
   useEffect(() => {
     loadAdminAdventures();
+  }, []);
+
+  const loadAdminReviews = async () => {
+    try {
+      setReviewsLoading(true);
+      setReviewError("");
+      const data = await fetchAdminReviews();
+      setReviews(data);
+    } catch (error) {
+      setReviewError(error.message || "Unable to load admin reviews.");
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAdminReviews();
   }, []);
 
   const dashboardStats = useMemo(
@@ -574,16 +563,42 @@ function AdminPage() {
     setAdventureForm(getEmptyAdventureForm());
   };
 
-  const handleReviewToggle = (reviewId) => {
-    setReviews((currentReviews) =>
-      currentReviews.map((review) =>
-        review.id === reviewId ? { ...review, approved: !review.approved } : review
-      )
-    );
+  const handleReviewToggle = async (reviewId) => {
+    try {
+      setReviewActionLoading(true);
+      setReviewError("");
+      setReviewStatus("");
+      const updatedReview = await toggleReviewApproval(reviewId);
+      setReviews((currentReviews) =>
+        currentReviews.map((review) => (review.id === reviewId ? updatedReview : review))
+      );
+      await refreshReviews();
+      setReviewStatus(
+        updatedReview.approved
+          ? "Review approved and now visible on the public website."
+          : "Review moved back to pending."
+      );
+    } catch (error) {
+      setReviewError(error.message || "Failed to update review approval.");
+    } finally {
+      setReviewActionLoading(false);
+    }
   };
 
-  const handleReviewDelete = (reviewId) => {
-    setReviews((currentReviews) => currentReviews.filter((review) => review.id !== reviewId));
+  const handleReviewDelete = async (reviewId) => {
+    try {
+      setReviewActionLoading(true);
+      setReviewError("");
+      setReviewStatus("");
+      await deleteReviewRequest(reviewId);
+      setReviews((currentReviews) => currentReviews.filter((review) => review.id !== reviewId));
+      await refreshReviews();
+      setReviewStatus("Review deleted successfully.");
+    } catch (error) {
+      setReviewError(error.message || "Failed to delete review.");
+    } finally {
+      setReviewActionLoading(false);
+    }
   };
 
   const moveGalleryItem = (itemId, direction) => {
@@ -1145,30 +1160,45 @@ function AdminPage() {
             <section id="reviews" className="rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">Reviews</p>
               <h2 className="mt-2 font-heading text-3xl font-black text-secondary">Moderate Testimonials</h2>
+              {reviewError ? (
+                <p className="mt-4 rounded-2xl bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
+                  {reviewError}
+                </p>
+              ) : null}
+              {reviewStatus ? (
+                <p className="mt-4 rounded-2xl bg-success/15 px-4 py-3 text-sm font-semibold text-secondary">
+                  {reviewStatus}
+                </p>
+              ) : null}
+              {reviewsLoading ? (
+                <p className="mt-4 text-sm text-secondary/70">Loading reviews...</p>
+              ) : null}
               <div className="mt-6 grid gap-4 xl:grid-cols-2">
                 {reviews.map((review) => (
                   <article key={review.id} className="rounded-3xl border border-neutral bg-accent p-5">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-semibold text-secondary">{review.name}</p>
-                      <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(review.approved ? "Active" : "Draft")}`}>
-                        {review.approved ? "Approved" : "Pending"}
-                      </span>
-                    </div>
-                    <p className="mt-3 text-sm leading-7 text-secondary/78">{review.text}</p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleReviewToggle(review.id)}
-                        className="inline-flex items-center gap-2 rounded-full border border-neutral px-3 py-2 text-xs font-bold text-secondary transition hover:border-primary hover:text-primary"
-                      >
-                        {review.approved ? <FaEyeSlash /> : <FaEye />}
+                        <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(review.approved ? "Active" : "Draft")}`}>
+                          {review.approved ? "Approved" : "Pending"}
+                        </span>
+                      </div>
+                    <p className="mt-3 text-sm leading-7 text-secondary/78">{review.review_text}</p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleReviewToggle(review.id)}
+                          disabled={reviewActionLoading}
+                          className="inline-flex items-center gap-2 rounded-full border border-neutral px-3 py-2 text-xs font-bold text-secondary transition hover:border-primary hover:text-primary"
+                        >
+                          {review.approved ? <FaEyeSlash /> : <FaEye />}
                         {review.approved ? "Unapprove" : "Approve"}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => handleReviewDelete(review.id)}
-                        className="inline-flex items-center gap-2 rounded-full border border-primary/25 px-3 py-2 text-xs font-bold text-primary transition hover:bg-primary hover:text-white"
-                      >
+                        <button
+                          type="button"
+                          onClick={() => handleReviewDelete(review.id)}
+                          disabled={reviewActionLoading}
+                          className="inline-flex items-center gap-2 rounded-full border border-primary/25 px-3 py-2 text-xs font-bold text-primary transition hover:bg-primary hover:text-white"
+                        >
                         <FaTrash />
                         Remove
                       </button>
