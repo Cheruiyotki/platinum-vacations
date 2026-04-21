@@ -2,7 +2,12 @@ import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { handleAssetImageError } from "../utils/imageFallback";
 
 function PackageCard({ travelPackage }) {
-  const ctaText = `Book with KES ${travelPackage.deposit_required.toLocaleString()} Deposit`;
+  const depositAmount = Number.isFinite(travelPackage.deposit_required)
+    ? travelPackage.deposit_required
+    : 0;
+  const ctaText = `Book with KES ${depositAmount.toLocaleString()} Deposit`;
+  const includedItems = Array.isArray(travelPackage.includes_json) ? travelPackage.includes_json : [];
+  const excludedItems = Array.isArray(travelPackage.excludes_json) ? travelPackage.excludes_json : [];
 
   return (
     <article className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-neutral bg-white shadow-card">
@@ -15,7 +20,7 @@ function PackageCard({ travelPackage }) {
       <div className="relative h-56 w-full overflow-hidden">
         <img
           src={travelPackage.image_url}
-          alt={travelPackage.title}
+          alt={travelPackage.title || "Travel package image"}
           className="h-full w-full object-cover"
           onError={(event) =>
             handleAssetImageError(
@@ -49,7 +54,7 @@ function PackageCard({ travelPackage }) {
             Package Includes
           </p>
           <ul className="mt-3 space-y-2">
-            {travelPackage.includes_json.map((item) => (
+            {includedItems.map((item) => (
               <li key={item} className="flex items-start gap-2 text-sm text-secondary/90">
                 <FaCheckCircle className="mt-[2px] shrink-0 text-success" />
                 <span>{item}</span>
@@ -63,7 +68,7 @@ function PackageCard({ travelPackage }) {
             Package Excludes
           </p>
           <ul className="mt-3 space-y-2">
-            {travelPackage.excludes_json.map((item) => (
+            {excludedItems.map((item) => (
               <li key={item} className="flex items-start gap-2 text-sm text-secondary/90">
                 <FaTimesCircle className="mt-[2px] shrink-0 text-primary" />
                 <span>{item}</span>

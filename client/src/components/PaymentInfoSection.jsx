@@ -4,9 +4,9 @@ function PaymentInfoSection() {
   const { packages } = usePackages();
 
   const mombasaDeposit =
-    packages.find((pkg) => pkg.slug === "mombasa-malindi-summer-tides")?.deposit_required || 5000;
+    packages.find((pkg) => pkg.slug === "mombasa-malindi-summer-tides")?.deposit_required ?? 5000;
   const wrcDeposit =
-    packages.find((pkg) => pkg.slug === "wrc-naivasha-experience")?.deposit_required || 1000;
+    packages.find((pkg) => pkg.slug === "wrc-naivasha-experience")?.deposit_required ?? 1000;
 
   return (
     <section id="pay-now" className="py-16 md:py-20">

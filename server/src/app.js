@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const packageRoutes = require("./routes/packageRoutes");
+const { hasDatabaseConfig } = require("./db/pool");
 
 const app = express();
 
@@ -14,7 +15,7 @@ app.use(
 app.use(express.json());
 
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok" });
+  res.json({ status: "ok", databaseConfigured: hasDatabaseConfig() });
 });
 
 app.use("/api/packages", packageRoutes);

@@ -31,6 +31,12 @@ function PackagesSection() {
             ))}
           </div>
         ) : null}
+
+        {!loading && !error && packages.length === 0 ? (
+          <p className="mt-8 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white/85">
+            No packages are available right now. Please check back shortly.
+          </p>
+        ) : null}
       </div>
     </section>
   );
