@@ -5,6 +5,7 @@ import InstagramFeedSection from "../components/InstagramFeedSection";
 import Navbar from "../components/Navbar";
 import PackagesSection from "../components/PackagesSection";
 import PaymentInfoSection from "../components/PaymentInfoSection";
+import TravelAssistant from "../components/TravelAssistant";
 
 function HomePage() {
   const scrollToSection = (sectionId) => {
@@ -25,6 +26,7 @@ function HomePage() {
         <InstagramFeedSection />
       </main>
       <Footer />
+      <TravelAssistant />
     </div>
   );
 }

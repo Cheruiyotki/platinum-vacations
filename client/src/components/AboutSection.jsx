@@ -8,6 +8,10 @@ function AboutSection() {
         <div className="mt-7 space-y-5 text-base leading-8 text-secondary/85 md:text-lg">
           <p>We specialize in organizing unforgettable tours and trips across Kenya.</p>
           <p>
+            Based in Nyeri, we bring together local insight, careful planning, and a real love for
+            memorable travel experiences.
+          </p>
+          <p>
             Whether you're looking to explore breathtaking landscapes, enjoy wildlife safaris, or
             immerse yourself in the vibrant cultures of Kenya, Platinum Vacations ensures every
             journey is thoughtfully planned and memorable.

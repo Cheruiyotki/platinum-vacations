@@ -1,4 +1,20 @@
+import { FaQuoteLeft, FaStar } from "react-icons/fa";
 import { usePackages } from "../context/PackageContext";
+
+const reviews = [
+  {
+    name: "Sharon W.",
+    text: "The trip was well organized, communication was smooth, and the whole experience felt worth it from start to finish."
+  },
+  {
+    name: "Brian K.",
+    text: "I loved the flexible payment plan and how easy it was to secure my spot before clearing the balance later."
+  },
+  {
+    name: "Mercy N.",
+    text: "Friendly team, beautiful destinations, and great coordination on the day of travel. I would book again."
+  }
+];
 
 function PaymentInfoSection() {
   const { packages } = usePackages();
@@ -35,29 +51,59 @@ function PaymentInfoSection() {
                   </p>
                 </div>
               </div>
-            </div>
 
-            <div className="p-8 md:p-10">
-              <div className="inline-flex rounded-full bg-success/20 px-4 py-2 text-sm font-bold text-secondary">
+              <div className="mt-8 inline-flex rounded-full bg-success/20 px-4 py-2 text-sm font-bold text-white">
                 M-Pesa Payment Details
               </div>
-              <p className="mt-4 text-sm font-semibold uppercase tracking-wider text-secondary/60">
+              <p className="mt-4 text-sm font-semibold uppercase tracking-wider text-white/60">
                 Till Number
               </p>
               <p className="font-heading text-4xl font-black text-success">46 19 122</p>
 
-              <ol className="mt-7 space-y-3 text-sm font-medium text-secondary/85">
-                <li className="rounded-xl border border-neutral px-4 py-3">
+              <ol className="mt-7 space-y-3 text-sm font-medium text-white/85">
+                <li className="rounded-xl border border-white/15 bg-white/5 px-4 py-3">
                   1. Lipa na M-PESA
                 </li>
-                <li className="rounded-xl border border-neutral px-4 py-3">
+                <li className="rounded-xl border border-white/15 bg-white/5 px-4 py-3">
                   2. Buy Goods and Services
                 </li>
-                <li className="rounded-xl border border-neutral px-4 py-3">
+                <li className="rounded-xl border border-white/15 bg-white/5 px-4 py-3">
                   3. Enter Till Number
                 </li>
-                <li className="rounded-xl border border-neutral px-4 py-3">4. Enter Amount</li>
+                <li className="rounded-xl border border-white/15 bg-white/5 px-4 py-3">4. Enter Amount</li>
               </ol>
+            </div>
+
+            <div className="p-8 md:p-10">
+              <div className="inline-flex rounded-full bg-primary/10 px-4 py-2 text-sm font-bold text-primary">
+                Reviews & Feedback
+              </div>
+              <h3 className="mt-4 font-heading text-3xl font-extrabold text-secondary">
+                What Travelers Say
+              </h3>
+              <p className="mt-3 text-sm text-secondary/70">
+                A few kind words from people who have traveled with Platinum Vacations.
+              </p>
+
+              <div className="mt-7 space-y-4">
+                {reviews.map((review) => (
+                  <article
+                    key={review.name}
+                    className="rounded-2xl border border-neutral bg-accent px-5 py-5 shadow-sm"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-2 text-success">
+                        {Array.from({ length: 5 }).map((_, index) => (
+                          <FaStar key={`${review.name}-${index}`} className="text-sm" />
+                        ))}
+                      </div>
+                      <FaQuoteLeft className="text-primary/30" />
+                    </div>
+                    <p className="mt-4 text-sm leading-7 text-secondary/80">{review.text}</p>
+                    <p className="mt-4 text-sm font-bold text-secondary">{review.name}</p>
+                  </article>
+                ))}
+              </div>
             </div>
           </div>
         </div>
