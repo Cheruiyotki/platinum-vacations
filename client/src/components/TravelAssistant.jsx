@@ -286,16 +286,18 @@ function TravelAssistant() {
   return (
     <>
       {isOpen ? (
-        <div className="fixed bottom-20 right-3 z-[80] w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-[1.5rem] border border-white/10 bg-white shadow-2xl md:bottom-24 md:right-6 md:w-[calc(100vw-2rem)] md:max-w-sm md:rounded-[1.75rem]">
-          <div className="bg-secondary px-5 py-4 text-white">
+        <div className="fixed bottom-16 right-3 z-[80] w-[min(18rem,calc(100vw-1.25rem))] overflow-hidden rounded-[1.3rem] border border-white/10 bg-white shadow-2xl sm:bottom-20 sm:w-[min(20rem,calc(100vw-1.5rem))] sm:rounded-[1.5rem] md:bottom-24 md:right-6 md:w-[calc(100vw-2rem)] md:max-w-sm md:rounded-[1.75rem]">
+          <div className="bg-secondary px-4 py-3 text-white sm:px-5 sm:py-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-white/75">
-                  <FaRobot className="text-xs" />
+                <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/75 sm:px-3 sm:text-[11px] sm:tracking-[0.24em]">
+                  <FaRobot className="text-[10px] sm:text-xs" />
                   AI Powered
                 </p>
-                <h3 className="mt-3 font-heading text-2xl font-extrabold">Platinum AI</h3>
-                <p className="mt-1 text-sm text-white/75">
+                <h3 className="mt-2 font-heading text-xl font-extrabold sm:mt-3 sm:text-2xl">
+                  Platinum AI
+                </h3>
+                <p className="mt-1 text-xs text-white/75 sm:text-sm">
                   Answers only about Platinum Vacations.
                 </p>
               </div>
@@ -303,7 +305,7 @@ function TravelAssistant() {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-primary"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-sm text-white transition hover:bg-primary sm:h-10 sm:w-10 sm:text-base"
                 aria-label="Close chat assistant"
               >
                 <FaTimes />
@@ -311,11 +313,11 @@ function TravelAssistant() {
             </div>
           </div>
 
-          <div className="max-h-[18rem] space-y-3 overflow-y-auto bg-accent px-4 py-4 md:max-h-[24rem]">
+          <div className="max-h-[16rem] space-y-2.5 overflow-y-auto bg-accent px-3 py-3 sm:max-h-[18rem] sm:space-y-3 sm:px-4 sm:py-4 md:max-h-[24rem]">
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm ${
+                className={`max-w-[90%] rounded-2xl px-3 py-2.5 text-xs leading-5 shadow-sm sm:max-w-[88%] sm:px-4 sm:py-3 sm:text-sm sm:leading-6 ${
                   message.role === "assistant"
                     ? "bg-neutral text-secondary"
                     : "ml-auto bg-primary text-white"
@@ -326,7 +328,7 @@ function TravelAssistant() {
             ))}
           </div>
 
-          <div className="border-t border-neutral bg-white px-4 py-4">
+          <div className="border-t border-neutral bg-white px-3 py-3 sm:px-4 sm:py-4">
             {!hasUserAskedQuestion ? (
               <div className="mb-3 flex flex-wrap gap-2">
                 {quickPrompts.map((prompt) => (
@@ -334,7 +336,7 @@ function TravelAssistant() {
                     key={prompt}
                     type="button"
                     onClick={() => sendMessage(prompt)}
-                    className="rounded-full border border-neutral px-3 py-1.5 text-xs font-bold text-secondary transition hover:border-primary hover:text-primary"
+                    className="rounded-full border border-neutral px-2.5 py-1.5 text-[11px] font-bold text-secondary transition hover:border-primary hover:text-primary sm:px-3 sm:text-xs"
                   >
                     {prompt}
                   </button>
@@ -348,11 +350,11 @@ function TravelAssistant() {
                 value={inputValue}
                 onChange={(event) => setInputValue(event.target.value)}
                 placeholder="Ask about adventures, payments, pickups, or contacts..."
-                className="min-h-[3.25rem] flex-1 resize-none rounded-2xl border border-neutral px-4 py-3 text-sm text-secondary outline-none transition focus:border-primary"
+                className="min-h-[3rem] flex-1 resize-none rounded-2xl border border-neutral px-3 py-2.5 text-xs text-secondary outline-none transition focus:border-primary sm:min-h-[3.25rem] sm:px-4 sm:py-3 sm:text-sm"
               />
               <button
                 type="submit"
-                className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-white transition hover:bg-secondary"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm text-white transition hover:bg-secondary sm:h-12 sm:w-12 sm:text-base"
                 aria-label="Send message"
               >
                 <FaPaperPlane />
@@ -365,13 +367,13 @@ function TravelAssistant() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 z-[75] inline-flex items-center gap-3 rounded-full bg-primary px-5 py-3 text-sm font-bold text-white shadow-2xl transition hover:bg-secondary md:bottom-6 md:right-6"
+        className="fixed bottom-3 right-3 z-[75] inline-flex items-center gap-2 rounded-full bg-primary px-3.5 py-2.5 text-xs font-bold text-white shadow-2xl transition hover:bg-secondary sm:bottom-4 sm:right-4 sm:gap-3 sm:px-5 sm:py-3 sm:text-sm md:bottom-6 md:right-6"
       >
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/15">
-          <FaRobot className="text-base" />
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/15 sm:h-10 sm:w-10">
+          <FaRobot className="text-sm sm:text-base" />
         </span>
         <span className="text-left">
-          <span className="block text-[11px] uppercase tracking-[0.24em] text-white/70">
+          <span className="block text-[9px] uppercase tracking-[0.18em] text-white/70 sm:text-[11px] sm:tracking-[0.24em]">
             AI Powered
           </span>
           <span className="block">Chat With Platinum AI</span>
