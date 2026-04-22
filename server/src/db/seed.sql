@@ -199,3 +199,160 @@ FROM (
     )
 ) AS seeded_reviews(name, review_text, rating, approved)
 WHERE NOT EXISTS (SELECT 1 FROM reviews);
+
+INSERT INTO customers (name, phone, notes)
+VALUES
+  ('Sharon W.', '0740629899', 'Requested window seat.'),
+  ('Brian K.', '0768070634', 'Confirmed for shared room.'),
+  ('Mercy N.', '0711757863', 'Needs pickup reminder.'),
+  ('Kelvin T.', '0798001122', 'Vegetarian meal preference.'),
+  ('Faith G.', '0700123456', 'Interested in seasonal rally adventures.')
+ON CONFLICT (phone) DO UPDATE
+SET
+  name = EXCLUDED.name,
+  notes = EXCLUDED.notes,
+  updated_at = NOW();
+
+INSERT INTO bookings (
+  booking_code,
+  customer_id,
+  package_id,
+  payment_option,
+  total_amount,
+  amount_paid,
+  balance,
+  status
+)
+SELECT
+  seeded.booking_code,
+  customers.id,
+  packages.id,
+  seeded.payment_option,
+  seeded.total_amount,
+  seeded.amount_paid,
+  seeded.balance,
+  seeded.status
+FROM (
+  VALUES
+    ('BK-1001', '0740629899', 'maasai-mara-big-five-safari', 'space', 32999, 8000, 24999, 'Pending balance'),
+    ('BK-1002', '0768070634', 'mount-kenya-summit-trail', 'full', 18500, 18500, 0, 'Confirmed'),
+    ('BK-1003', '0711757863', 'mombasa-malindi-summer-tides', 'space', 21999, 11000, 10999, 'Pending balance'),
+    ('BK-1004', '0798001122', 'mt-satima-sunrise-hike', 'full', 4500, 4500, 0, 'Confirmed'),
+    ('BK-1005', '0700123456', 'wrc-naivasha-experience', 'space', 3800, 2000, 1800, 'Awaiting payment')
+) AS seeded(booking_code, customer_phone, package_slug, payment_option, total_amount, amount_paid, balance, status)
+JOIN customers ON customers.phone = seeded.customer_phone
+JOIN packages ON packages.slug = seeded.package_slug
+ON CONFLICT (booking_code) DO UPDATE
+SET
+  customer_id = EXCLUDED.customer_id,
+  package_id = EXCLUDED.package_id,
+  payment_option = EXCLUDED.payment_option,
+  total_amount = EXCLUDED.total_amount,
+  amount_paid = EXCLUDED.amount_paid,
+  balance = EXCLUDED.balance,
+  status = EXCLUDED.status,
+  updated_at = NOW();
+
+INSERT INTO payments (
+  payment_code,
+  booking_id,
+  phone,
+  amount,
+  reference,
+  stk_status,
+  response_description
+)
+SELECT
+  seeded.payment_code,
+  bookings.id,
+  seeded.phone,
+  seeded.amount,
+  seeded.reference,
+  seeded.stk_status,
+  seeded.response_description
+FROM (
+  VALUES
+    ('PAY-2001', 'BK-1001', '0740629899', 8000, 'MARA8000', 'Success', 'Seeded successful payment'),
+    ('PAY-2002', 'BK-1002', '0768070634', 18500, 'KENYA18500', 'Success', 'Seeded successful payment'),
+    ('PAY-2003', 'BK-1003', '0711757863', 11000, 'MOMB11000', 'Pending', 'STK push sent and awaiting confirmation'),
+    ('PAY-2004', 'BK-1004', '0798001122', 4500, 'SAT4500', 'Success', 'Seeded successful payment'),
+    ('PAY-2005', 'BK-1005', '0700123456', 2000, 'WRC2000', 'Failed', 'Customer did not complete the PIN prompt')
+) AS seeded(payment_code, booking_code, phone, amount, reference, stk_status, response_description)
+JOIN bookings ON bookings.booking_code = seeded.booking_code
+ON CONFLICT (payment_code) DO UPDATE
+SET
+  booking_id = EXCLUDED.booking_id,
+  phone = EXCLUDED.phone,
+  amount = EXCLUDED.amount,
+  reference = EXCLUDED.reference,
+  stk_status = EXCLUDED.stk_status,
+  response_description = EXCLUDED.response_description,
+  updated_at = NOW();
+
+INSERT INTO assistant_messages (source, topic, summary, unanswered)
+SELECT *
+FROM (
+  VALUES
+    ('Website AI', 'Booking info', 'Asked for dates and deposit details for Maasai Mara.', FALSE),
+    ('Website AI', 'Upcoming events', 'Wanted to know which adventures are coming up next.', FALSE),
+    ('WhatsApp', 'Pickup point', 'Customer asked for Nairobi meeting point confirmation.', TRUE),
+    ('Website AI', 'Payment issue', 'Customer said STK push did not reach the phone.', TRUE),
+    ('Instagram', 'Destination suggestion', 'Suggested adding Nanyuki or Samburu next.', FALSE)
+) AS seeded_messages(source, topic, summary, unanswered)
+WHERE NOT EXISTS (SELECT 1 FROM assistant_messages);
+
+INSERT INTO gallery_items (src, location, visible, sort_order)
+SELECT *
+FROM (
+  VALUES
+    ('/assets/image_1.png', 'Mombasa', TRUE, 1),
+    ('/assets/image_3.png', 'Naivasha', TRUE, 2),
+    ('/assets/image_0.png', 'Maasai Mara', TRUE, 3),
+    ('/assets/image_2.jpg', 'Mount Kenya', TRUE, 4),
+    ('/assets/image_4.jpg', 'Mt. Satima', TRUE, 5),
+    ('/assets/image_5.jpg', 'Maasai Mara', FALSE, 6)
+) AS seeded_gallery(src, location, visible, sort_order)
+WHERE NOT EXISTS (SELECT 1 FROM gallery_items);
+
+INSERT INTO announcements (title, status, body)
+SELECT *
+FROM (
+  VALUES
+    ('Maasai Mara Seats Filling Fast', 'Active', 'Only a few safari seats are left for the July departure.'),
+    ('Mt. Satima Sunrise Special', 'Draft', 'Early bird spot offer for the next hike.')
+) AS seeded_announcements(title, status, body)
+WHERE NOT EXISTS (SELECT 1 FROM announcements);
+
+INSERT INTO promo_codes (code, discount, status)
+SELECT *
+FROM (
+  VALUES
+    ('MARA10', '10%', 'Active'),
+    ('WEEKEND5', 'KES 500', 'Paused')
+) AS seeded_promos(code, discount, status)
+WHERE NOT EXISTS (SELECT 1 FROM promo_codes);
+
+INSERT INTO site_content (
+  id,
+  about_text,
+  contact_phones,
+  footer_email,
+  payment_instructions,
+  footer_links
+)
+VALUES (
+  1,
+  'Platinum Vacations is based in Nyeri and specializes in carefully planned travel adventures across Kenya.',
+  '0740629899, 0768070634, 0711757863',
+  'platinumvacationske@gmail.com',
+  'Customers can pay in full or reserve a space with at least half upfront and clear the balance the day before the trip.',
+  'Instagram, TikTok, WhatsApp'
+)
+ON CONFLICT (id) DO UPDATE
+SET
+  about_text = EXCLUDED.about_text,
+  contact_phones = EXCLUDED.contact_phones,
+  footer_email = EXCLUDED.footer_email,
+  payment_instructions = EXCLUDED.payment_instructions,
+  footer_links = EXCLUDED.footer_links,
+  updated_at = NOW();

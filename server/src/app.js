@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const adminRoutes = require("./routes/adminRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 const packageRoutes = require("./routes/packageRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
@@ -28,6 +30,8 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/packages", packageRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/messages", messageRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({ message: "Route not found" });

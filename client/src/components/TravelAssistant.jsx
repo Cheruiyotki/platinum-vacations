@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FaPaperPlane, FaRobot, FaTimes } from "react-icons/fa";
+import { logAssistantMessage } from "../api/messages";
 import { usePackages } from "../context/PackageContext";
 
 const quickPrompts = [
@@ -125,14 +126,61 @@ function findAdventureMatch(message, packages) {
   );
 }
 
-function buildAssistantReply(message, packages) {
+function buildMessageTopic(message, matchedAdventure) {
+  const normalizedMessage = message.trim().toLowerCase();
+
+  if (matchedAdventure?.title) {
+    return matchedAdventure.title;
+  }
+
+  if (normalizedMessage.includes("pay") || normalizedMessage.includes("mpesa")) {
+    return "Payment";
+  }
+
+  if (normalizedMessage.includes("pickup")) {
+    return "Pickup point";
+  }
+
+  if (normalizedMessage.includes("contact") || normalizedMessage.includes("whatsapp")) {
+    return "Contacts";
+  }
+
+  if (normalizedMessage.includes("upcoming") || normalizedMessage.includes("event")) {
+    return "Upcoming events";
+  }
+
+  if (normalizedMessage.includes("book") || normalizedMessage.includes("date")) {
+    return "Booking info";
+  }
+
+  if (normalizedMessage.includes("suggest") || normalizedMessage.includes("recommend")) {
+    return "Destination suggestion";
+  }
+
+  return "General inquiry";
+}
+
+function shouldMarkMessageUnanswered(message, reply) {
+  const normalizedMessage = message.toLowerCase();
+  const normalizedReply = reply.toLowerCase();
+
+  return (
+    normalizedReply.includes("not loaded") ||
+    normalizedReply.includes("i can only help") ||
+    normalizedMessage.includes("issue") ||
+    normalizedMessage.includes("problem") ||
+    normalizedMessage.includes("did not") ||
+    normalizedMessage.includes("not working") ||
+    normalizedMessage.includes("failed")
+  );
+}
+
+function buildAssistantReply(message, packages, matchedAdventure = findAdventureMatch(message, packages)) {
   const normalizedMessage = message.trim().toLowerCase();
 
   if (!normalizedMessage) {
     return "Ask me about Platinum Vacations adventures, prices, payments, pickups, or contact details.";
   }
-
-  const matchedAdventure = findAdventureMatch(normalizedMessage, packages);
 
   if (
     normalizedMessage.includes("hello") ||
@@ -265,17 +313,27 @@ function TravelAssistant() {
       return;
     }
 
+    const matchedAdventure = findAdventureMatch(trimmedMessage, packages);
+    const assistantReply = buildAssistantReply(trimmedMessage, packages, matchedAdventure);
+
     setMessages((currentMessages) => [
       ...currentMessages,
       { id: `${Date.now()}-user`, role: "user", content: trimmedMessage },
       {
         id: `${Date.now()}-assistant`,
         role: "assistant",
-        content: buildAssistantReply(trimmedMessage, packages)
+        content: assistantReply
       }
     ]);
     setInputValue("");
     setIsOpen(true);
+
+    void logAssistantMessage({
+      source: "Website AI",
+      topic: buildMessageTopic(trimmedMessage, matchedAdventure),
+      summary: trimmedMessage.slice(0, 220),
+      unanswered: shouldMarkMessageUnanswered(trimmedMessage, assistantReply)
+    }).catch(() => {});
   };
 
   const handleSubmit = (event) => {

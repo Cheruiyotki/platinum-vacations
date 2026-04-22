@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  createPackage,
+  createAnnouncement as createAnnouncementRequest,
+  createPromoCode as createPromoCodeRequest,
+  fetchAdminDashboard,
+  reorderGalleryItems as reorderGalleryItemsRequest,
+  toggleGalleryVisibility as toggleGalleryVisibilityRequest,
+  updateSiteContent as updateSiteContentRequest
+} from "../api/admin";
+import {
+  createPackage as createPackageRequest,
   deletePackage as deletePackageRequest,
   fetchAdminPackages,
   togglePackageVisibility as togglePackageVisibilityRequest,
@@ -340,23 +348,21 @@ function AdminPage() {
   const [reviewActionLoading, setReviewActionLoading] = useState(false);
   const [reviewError, setReviewError] = useState("");
   const [reviewStatus, setReviewStatus] = useState("");
-  const [bookings] = useState(initialBookings);
-  const [payments] = useState(initialPayments);
-  const [customers] = useState(initialCustomers);
-  const [messages] = useState(initialMessages);
-  const [announcements, setAnnouncements] = useState(initialAnnouncements);
-  const [promoCodes, setPromoCodes] = useState(initialPromoCodes);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [dashboardActionLoading, setDashboardActionLoading] = useState(false);
+  const [dashboardError, setDashboardError] = useState("");
+  const [dashboardStatus, setDashboardStatus] = useState("");
+  const [bookings, setBookings] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [promoCodes, setPromoCodes] = useState([]);
   const [contentState, setContentState] = useState(initialContentState);
   const [announcementForm, setAnnouncementForm] = useState({ title: "", status: "Draft", body: "" });
   const [promoForm, setPromoForm] = useState({ code: "", discount: "", status: "Active" });
-  const [galleryItems, setGalleryItems] = useState([
-    { id: "GAL-1", src: "/assets/image_1.png", location: "Mombasa", visible: true },
-    { id: "GAL-2", src: "/assets/image_3.png", location: "Naivasha", visible: true },
-    { id: "GAL-3", src: "/assets/image_0.png", location: "Maasai Mara", visible: true },
-    { id: "GAL-4", src: "/assets/image_2.jpg", location: "Mount Kenya", visible: true },
-    { id: "GAL-5", src: "/assets/image_4.jpg", location: "Mt. Satima", visible: true },
-    { id: "GAL-6", src: "/assets/image_5.jpg", location: "Maasai Mara", visible: false }
-  ]);
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [reports, setReports] = useState([]);
 
   const loadAdminAdventures = async () => {
     try {
@@ -373,6 +379,31 @@ function AdminPage() {
 
   useEffect(() => {
     loadAdminAdventures();
+  }, []);
+
+  const loadAdminDashboard = async () => {
+    try {
+      setDashboardLoading(true);
+      setDashboardError("");
+      const data = await fetchAdminDashboard();
+      setBookings(data.bookings);
+      setPayments(data.payments);
+      setCustomers(data.customers);
+      setMessages(data.messages);
+      setGalleryItems(data.galleryItems);
+      setAnnouncements(data.announcements);
+      setPromoCodes(data.promoCodes);
+      setContentState(data.contentState);
+      setReports(data.reports);
+    } catch (error) {
+      setDashboardError(error.message || "Unable to load admin dashboard data.");
+    } finally {
+      setDashboardLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAdminDashboard();
   }, []);
 
   const loadAdminReviews = async () => {
@@ -417,15 +448,6 @@ function AdminPage() {
       }
     ],
     [adventures, bookings.length, messages.length, payments]
-  );
-
-  const reportCards = useMemo(
-    () => [
-      { title: "Monthly bookings", value: 24, note: "6 added this week" },
-      { title: "Best performing adventure", value: "Maasai Mara", note: "Highest inquiries this month" },
-      { title: "Payment completion rate", value: "72%", note: "8 customers still clearing balances" }
-    ],
-    []
   );
 
   const topMessageTopics = useMemo(() => {
@@ -485,7 +507,7 @@ function AdminPage() {
         );
         setAdventureStatus("Adventure updated successfully.");
       } else {
-        const createdAdventure = await createPackage(nextAdventure);
+        const createdAdventure = await createPackageRequest(nextAdventure);
         setAdventures((currentAdventures) => [createdAdventure, ...currentAdventures]);
         setAdventureStatus("Adventure created successfully.");
       }
@@ -602,59 +624,112 @@ function AdminPage() {
   };
 
   const moveGalleryItem = (itemId, direction) => {
-    setGalleryItems((currentItems) => {
-      const currentIndex = currentItems.findIndex((item) => item.id === itemId);
-      const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    const galleryDbId = galleryItems.find((item) => item.id === itemId)?.dbId;
 
-      if (currentIndex < 0 || targetIndex < 0 || targetIndex >= currentItems.length) {
-        return currentItems;
-      }
+    if (!galleryDbId) {
+      return;
+    }
 
-      const nextItems = [...currentItems];
-      const [movedItem] = nextItems.splice(currentIndex, 1);
-      nextItems.splice(targetIndex, 0, movedItem);
-      return nextItems;
-    });
+    setDashboardActionLoading(true);
+    setDashboardError("");
+    setDashboardStatus("");
+
+    reorderGalleryItemsRequest(galleryDbId, direction)
+      .then((updatedItems) => {
+        setGalleryItems(updatedItems);
+        setDashboardStatus("Gallery order updated successfully.");
+      })
+      .catch((error) => {
+        setDashboardError(error.message || "Failed to reorder gallery items.");
+      })
+      .finally(() => {
+        setDashboardActionLoading(false);
+      });
   };
 
   const toggleGalleryVisibility = (itemId) => {
-    setGalleryItems((currentItems) =>
-      currentItems.map((item) => (item.id === itemId ? { ...item, visible: !item.visible } : item))
-    );
+    const galleryDbId = galleryItems.find((item) => item.id === itemId)?.dbId;
+
+    if (!galleryDbId) {
+      return;
+    }
+
+    setDashboardActionLoading(true);
+    setDashboardError("");
+    setDashboardStatus("");
+
+    toggleGalleryVisibilityRequest(galleryDbId)
+      .then((updatedItem) => {
+        setGalleryItems((currentItems) =>
+          currentItems.map((item) => (item.id === itemId ? updatedItem : item))
+        );
+        setDashboardStatus(
+          updatedItem.visible ? "Gallery item is now visible." : "Gallery item hidden from homepage."
+        );
+      })
+      .catch((error) => {
+        setDashboardError(error.message || "Failed to update gallery visibility.");
+      })
+      .finally(() => {
+        setDashboardActionLoading(false);
+      });
   };
 
-  const addAnnouncement = () => {
+  const addAnnouncement = async () => {
     if (!announcementForm.title.trim()) {
+      setDashboardError("Announcement title is required.");
       return;
     }
 
-    setAnnouncements((currentAnnouncements) => [
-      {
-        id: `ANN-${Date.now()}`,
-        title: announcementForm.title.trim(),
-        status: announcementForm.status,
-        body: announcementForm.body.trim()
-      },
-      ...currentAnnouncements
-    ]);
-    setAnnouncementForm({ title: "", status: "Draft", body: "" });
+    try {
+      setDashboardActionLoading(true);
+      setDashboardError("");
+      setDashboardStatus("");
+      const createdAnnouncement = await createAnnouncementRequest(announcementForm);
+      setAnnouncements((currentAnnouncements) => [createdAnnouncement, ...currentAnnouncements]);
+      setAnnouncementForm({ title: "", status: "Draft", body: "" });
+      setDashboardStatus("Announcement created successfully.");
+    } catch (error) {
+      setDashboardError(error.message || "Failed to create announcement.");
+    } finally {
+      setDashboardActionLoading(false);
+    }
   };
 
-  const addPromoCode = () => {
+  const addPromoCode = async () => {
     if (!promoForm.code.trim()) {
+      setDashboardError("Promo code is required.");
       return;
     }
 
-    setPromoCodes((currentCodes) => [
-      {
-        id: `PROMO-${Date.now()}`,
-        code: promoForm.code.trim().toUpperCase(),
-        discount: promoForm.discount.trim(),
-        status: promoForm.status
-      },
-      ...currentCodes
-    ]);
-    setPromoForm({ code: "", discount: "", status: "Active" });
+    try {
+      setDashboardActionLoading(true);
+      setDashboardError("");
+      setDashboardStatus("");
+      const createdPromoCode = await createPromoCodeRequest(promoForm);
+      setPromoCodes((currentCodes) => [createdPromoCode, ...currentCodes]);
+      setPromoForm({ code: "", discount: "", status: "Active" });
+      setDashboardStatus("Promo code created successfully.");
+    } catch (error) {
+      setDashboardError(error.message || "Failed to create promo code.");
+    } finally {
+      setDashboardActionLoading(false);
+    }
+  };
+
+  const saveContentState = async () => {
+    try {
+      setDashboardActionLoading(true);
+      setDashboardError("");
+      setDashboardStatus("");
+      const updatedContent = await updateSiteContentRequest(contentState);
+      setContentState(updatedContent);
+      setDashboardStatus("Website content saved successfully.");
+    } catch (error) {
+      setDashboardError(error.message || "Failed to save website content.");
+    } finally {
+      setDashboardActionLoading(false);
+    }
   };
 
   return (
@@ -723,11 +798,22 @@ function AdminPage() {
                   </h2>
                 </div>
                 <p className="text-sm text-secondary/65">
-                  {loading || adminLoading
-                    ? "Loading adventure data..."
+                  {loading || adminLoading || dashboardLoading
+                    ? "Loading admin data..."
                     : "All sections are ready for admin updates."}
                 </p>
               </div>
+
+              {dashboardError ? (
+                <p className="mt-4 rounded-2xl bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
+                  {dashboardError}
+                </p>
+              ) : null}
+              {dashboardStatus ? (
+                <p className="mt-4 rounded-2xl bg-success/15 px-4 py-3 text-sm font-semibold text-secondary">
+                  {dashboardStatus}
+                </p>
+              ) : null}
 
               <div className="mt-6 grid gap-4 sm:grid-cols-2 2xl:grid-cols-5">
                 {dashboardStats.map((stat) => {
@@ -1230,6 +1316,7 @@ function AdminPage() {
                       <button
                         type="button"
                         onClick={() => moveGalleryItem(item.id, "up")}
+                        disabled={dashboardActionLoading}
                         className="inline-flex items-center gap-2 rounded-full border border-neutral px-3 py-2 text-xs font-bold text-secondary transition hover:border-primary hover:text-primary"
                       >
                         <FaArrowUp />
@@ -1238,6 +1325,7 @@ function AdminPage() {
                       <button
                         type="button"
                         onClick={() => toggleGalleryVisibility(item.id)}
+                        disabled={dashboardActionLoading}
                         className="inline-flex items-center gap-2 rounded-full border border-neutral px-3 py-2 text-xs font-bold text-secondary transition hover:border-primary hover:text-primary"
                       >
                         {item.visible ? <FaEyeSlash /> : <FaEye />}
@@ -1338,6 +1426,17 @@ function AdminPage() {
                     className="mt-2 w-full rounded-2xl border border-neutral px-4 py-3 text-sm outline-none transition focus:border-primary"
                   />
                 </label>
+                <div className="lg:col-span-2">
+                  <button
+                    type="button"
+                    onClick={saveContentState}
+                    disabled={dashboardActionLoading}
+                    className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary"
+                  >
+                    <FaSave />
+                    Save Content
+                  </button>
+                </div>
               </div>
             </section>
 
@@ -1378,6 +1477,7 @@ function AdminPage() {
                   <button
                     type="button"
                     onClick={addAnnouncement}
+                    disabled={dashboardActionLoading}
                     className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary"
                   >
                     <FaPlus />
@@ -1439,6 +1539,7 @@ function AdminPage() {
                   <button
                     type="button"
                     onClick={addPromoCode}
+                    disabled={dashboardActionLoading}
                     className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary"
                   >
                     <FaPlus />
@@ -1468,7 +1569,7 @@ function AdminPage() {
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">Reports</p>
               <h2 className="mt-2 font-heading text-3xl font-black text-secondary">Performance Snapshot</h2>
               <div className="mt-6 grid gap-4 lg:grid-cols-3">
-                {reportCards.map((report) => (
+                {reports.map((report) => (
                   <article key={report.title} className="rounded-3xl bg-secondary px-5 py-5 text-white shadow-sm">
                     <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/60">{report.title}</p>
                     <p className="mt-4 font-heading text-3xl font-black">{report.value}</p>
