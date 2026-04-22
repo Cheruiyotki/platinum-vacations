@@ -5,6 +5,7 @@ const messageRoutes = require("./routes/messageRoutes");
 const packageRoutes = require("./routes/packageRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+const siteRoutes = require("./routes/siteRoutes");
 const { hasDatabaseConfig } = require("./db/pool");
 const { hasMpesaConfig } = require("./services/mpesa");
 
@@ -32,6 +33,7 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/site", siteRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({ message: "Route not found" });

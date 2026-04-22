@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
+import { fetchVisibleGalleryItems } from "../api/site";
 import { handleAssetImageError } from "../utils/imageFallback";
 
-const galleryItems = [
+const fallbackGalleryItems = [
   {
     src: "/assets/image_1.png",
     location: "Mombasa"
@@ -28,6 +30,24 @@ const galleryItems = [
 ];
 
 function InstagramFeedSection() {
+  const [galleryItems, setGalleryItems] = useState(fallbackGalleryItems);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchVisibleGalleryItems()
+      .then((items) => {
+        if (isMounted && items.length) {
+          setGalleryItems(items);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <section className="bg-secondary py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4 md:px-6">

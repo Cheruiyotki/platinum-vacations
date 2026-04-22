@@ -46,6 +46,78 @@ function generateCode(prefix) {
   return `${prefix}-${Date.now()}${randomPart}`;
 }
 
+function normalizePromoCode(code) {
+  if (typeof code !== "string") {
+    return "";
+  }
+
+  return code.trim().toUpperCase();
+}
+
+function parsePromoDiscount(discount, baseAmount) {
+  const rawDiscount = typeof discount === "string" ? discount.trim() : "";
+
+  if (!rawDiscount) {
+    return { discountAmount: 0, kind: "none" };
+  }
+
+  const percentMatch = rawDiscount.match(/(\d+(?:\.\d+)?)\s*%/);
+  if (percentMatch) {
+    const percentValue = Number.parseFloat(percentMatch[1]);
+    if (!Number.isFinite(percentValue) || percentValue <= 0) {
+      return { discountAmount: 0, kind: "percent" };
+    }
+
+    const cappedPercent = Math.min(percentValue, 100);
+    return {
+      discountAmount: Math.round((baseAmount * cappedPercent) / 100),
+      kind: "percent"
+    };
+  }
+
+  const fixedMatch = rawDiscount.replace(/,/g, "").match(/(\d{1,9})/);
+  if (!fixedMatch) {
+    return { discountAmount: 0, kind: "fixed" };
+  }
+
+  const fixedAmount = Number.parseInt(fixedMatch[1], 10);
+  if (!Number.isFinite(fixedAmount) || fixedAmount <= 0) {
+    return { discountAmount: 0, kind: "fixed" };
+  }
+
+  return { discountAmount: fixedAmount, kind: "fixed" };
+}
+
+async function fetchActivePromoCode(code) {
+  const promoCode = normalizePromoCode(code);
+  if (!promoCode) {
+    return null;
+  }
+
+  const result = await getPool().query(
+    `
+      SELECT code, discount, status
+      FROM promo_codes
+      WHERE UPPER(code) = $1
+      LIMIT 1;
+    `,
+    [promoCode]
+  );
+
+  if (!result.rows.length) {
+    return null;
+  }
+
+  const promo = result.rows[0];
+  const status = typeof promo.status === "string" ? promo.status.trim().toLowerCase() : "";
+
+  if (status !== "active") {
+    return { ...promo, inactive: true };
+  }
+
+  return { ...promo, inactive: false };
+}
+
 async function fetchAdventureBySlug(slug) {
   const query = `
     SELECT
@@ -120,6 +192,9 @@ async function ensureBookingRecord(client, { customerId, packageId, paymentOptio
         id,
         booking_code,
         payment_option,
+        promo_code,
+        original_total_amount,
+        discount_amount,
         total_amount,
         amount_paid,
         balance,
@@ -145,7 +220,7 @@ async function ensureBookingRecord(client, { customerId, packageId, paymentOptio
             payment_option = $1,
             updated_at = NOW()
           WHERE id = $2
-          RETURNING id, booking_code, payment_option, total_amount, amount_paid, balance, status;
+          RETURNING id, booking_code, payment_option, promo_code, original_total_amount, discount_amount, total_amount, amount_paid, balance, status;
         `,
         [paymentOption, booking.id]
       );
@@ -163,13 +238,16 @@ async function ensureBookingRecord(client, { customerId, packageId, paymentOptio
         customer_id,
         package_id,
         payment_option,
+        promo_code,
+        original_total_amount,
+        discount_amount,
         total_amount,
         amount_paid,
         balance,
         status
       )
-      VALUES ($1, $2, $3, $4, $5, 0, $5, 'Awaiting payment')
-      RETURNING id, booking_code, payment_option, total_amount, amount_paid, balance, status;
+      VALUES ($1, $2, $3, $4, NULL, $5, 0, $5, 0, $5, 'Awaiting payment')
+      RETURNING id, booking_code, payment_option, promo_code, original_total_amount, discount_amount, total_amount, amount_paid, balance, status;
     `,
     [generateCode("BK"), customerId, packageId, paymentOption, totalAmount]
   );
@@ -180,6 +258,10 @@ async function ensureBookingRecord(client, { customerId, packageId, paymentOptio
 async function createPaymentRecord({
   bookingId,
   phoneNumber,
+  promoCode = null,
+  originalTotalAmount = null,
+  discountedTotalAmount = null,
+  discountAmount = 0,
   amount,
   reference,
   status,
@@ -193,6 +275,10 @@ async function createPaymentRecord({
         payment_code,
         booking_id,
         phone,
+        promo_code,
+        original_total_amount,
+        discounted_total_amount,
+        discount_amount,
         amount,
         reference,
         stk_status,
@@ -200,13 +286,17 @@ async function createPaymentRecord({
         merchant_request_id,
         response_description
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING id;
     `,
     [
       generateCode("PAY"),
       bookingId,
       normalizeStoredPhoneNumber(phoneNumber),
+      promoCode,
+      originalTotalAmount,
+      discountedTotalAmount,
+      discountAmount,
       amount,
       reference,
       status,
@@ -232,7 +322,7 @@ async function requestStkPush(req, res) {
     });
   }
 
-  const { packageSlug, phoneNumber, amount, paymentOption, customerName } = req.body || {};
+  const { packageSlug, phoneNumber, amount, paymentOption, customerName, promoCode } = req.body || {};
 
   if (!packageSlug || typeof packageSlug !== "string") {
     return res.status(400).json({ message: "A valid adventure is required." });
@@ -240,6 +330,11 @@ async function requestStkPush(req, res) {
 
   if (!phoneNumber || typeof phoneNumber !== "string") {
     return res.status(400).json({ message: "A valid phone number is required." });
+  }
+
+  const trimmedCustomerName = typeof customerName === "string" ? customerName.trim() : "";
+  if (!trimmedCustomerName) {
+    return res.status(400).json({ message: "Customer name is required." });
   }
 
   if (paymentOption !== "full" && paymentOption !== "space") {
@@ -252,6 +347,7 @@ async function requestStkPush(req, res) {
   }
 
   let booking = null;
+  let pricingDetails = null;
 
   try {
     const travelPackage = await fetchAdventureBySlug(packageSlug);
@@ -259,21 +355,35 @@ async function requestStkPush(req, res) {
       return res.status(404).json({ message: "Adventure not found." });
     }
 
-    const { fullAmount, minimumBookingAmount } = calculateMinimumBookingAmount(travelPackage);
-    const requiredAmount = paymentOption === "full" ? fullAmount : minimumBookingAmount;
+    const { fullAmount } = calculateMinimumBookingAmount(travelPackage);
+    const enteredPromoCode = normalizePromoCode(promoCode);
+    const promo = enteredPromoCode ? await fetchActivePromoCode(enteredPromoCode) : null;
 
-    if (requestedAmount < requiredAmount) {
-      return res.status(400).json({
-        message: `Enter at least KES ${requiredAmount.toLocaleString()} for this payment option.`
-      });
+    if (enteredPromoCode && !promo) {
+      return res.status(400).json({ message: "Promo code not found." });
     }
 
+    if (promo?.inactive) {
+      return res.status(400).json({ message: "That promo code is not active." });
+    }
+
+    const { discountAmount: rawDiscountAmount } = promo
+      ? parsePromoDiscount(promo.discount, fullAmount)
+      : { discountAmount: 0 };
+    const discountAmount = Math.max(Math.min(rawDiscountAmount, fullAmount), 0);
+    const discountedTotalAmount = Math.max(fullAmount - discountAmount, 0);
+    const minimumBookingAmount = Math.max(
+      Number(travelPackage.deposit_required) || 0,
+      Math.ceil(discountedTotalAmount / 2)
+    );
+
     const client = await getPool().connect();
+    let bookingBeforePromo = null;
 
     try {
       await client.query("BEGIN");
 
-      const customer = await ensureCustomerRecord(client, { phoneNumber, customerName });
+      const customer = await ensureCustomerRecord(client, { phoneNumber, customerName: trimmedCustomerName });
       booking = await ensureBookingRecord(client, {
         customerId: customer.id,
         packageId: travelPackage.id,
@@ -281,12 +391,91 @@ async function requestStkPush(req, res) {
         totalAmount: fullAmount
       });
 
+      bookingBeforePromo = booking;
+
+      if (enteredPromoCode) {
+        const existingPromoCode = typeof booking.promo_code === "string" ? booking.promo_code.trim().toUpperCase() : "";
+
+        if (existingPromoCode && existingPromoCode !== enteredPromoCode) {
+          await client.query("ROLLBACK");
+          return res.status(400).json({ message: "A different promo code was already applied to this booking." });
+        }
+
+        if (!existingPromoCode) {
+          const nextBalance = Math.max(discountedTotalAmount - Number(booking.amount_paid || 0), 0);
+          const nextStatus = nextBalance === 0 ? "Confirmed" : booking.status;
+
+          const updatedBooking = await client.query(
+            `
+              UPDATE bookings
+              SET
+                promo_code = $1,
+                original_total_amount = $2,
+                discount_amount = $3,
+                total_amount = $4,
+                balance = $5,
+                status = $6,
+                updated_at = NOW()
+              WHERE id = $7
+              RETURNING
+                id,
+                booking_code,
+                payment_option,
+                promo_code,
+                original_total_amount,
+                discount_amount,
+                total_amount,
+                amount_paid,
+                balance,
+                status;
+            `,
+            [
+              enteredPromoCode,
+              fullAmount,
+              discountAmount,
+              discountedTotalAmount,
+              nextBalance,
+              nextStatus,
+              booking.id
+            ]
+          );
+
+          booking = updatedBooking.rows[0];
+        }
+      }
+
       await client.query("COMMIT");
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
     } finally {
       client.release();
+    }
+
+    const remainingBalance = Number(booking.balance) || 0;
+    if (remainingBalance <= 0) {
+      return res.status(400).json({ message: "This booking is already fully paid." });
+    }
+
+    const requiredAmount =
+      paymentOption === "full" ? remainingBalance : Math.min(minimumBookingAmount, remainingBalance);
+
+    if (requestedAmount < requiredAmount) {
+      return res.status(400).json({
+        message: `Enter at least KES ${requiredAmount.toLocaleString()} for this payment option.`
+      });
+    }
+
+    if (requestedAmount > remainingBalance) {
+      return res.status(400).json({
+        message: `Amount exceeds remaining balance of KES ${remainingBalance.toLocaleString()}.`
+      });
+    }
+
+    if (paymentOption === "full" && requestedAmount !== remainingBalance) {
+      return res.status(400).json({
+        message: `To pay in full, enter the remaining balance of KES ${remainingBalance.toLocaleString()}.`
+      });
     }
 
     const reference = buildReference(travelPackage.slug, requestedAmount);
@@ -300,9 +489,23 @@ async function requestStkPush(req, res) {
           : `Booking space for ${travelPackage.title}`
     });
 
+    pricingDetails = {
+      promoCode: booking.promo_code || "",
+      originalTotalAmount: Number(booking.original_total_amount) || fullAmount,
+      discountAmount: Number(booking.discount_amount) || 0,
+      discountedTotalAmount: Number(booking.total_amount) || fullAmount,
+      minimumBookingAmount,
+      requiredAmount,
+      remainingBalance
+    };
+
     await createPaymentRecord({
       bookingId: booking.id,
       phoneNumber,
+      promoCode: booking.promo_code || null,
+      originalTotalAmount: pricingDetails.originalTotalAmount,
+      discountedTotalAmount: pricingDetails.discountedTotalAmount,
+      discountAmount: pricingDetails.discountAmount,
       amount: requestedAmount,
       reference,
       status: "Pending",
@@ -318,7 +521,8 @@ async function requestStkPush(req, res) {
       message:
         stkResponse.CustomerMessage ||
         "STK push sent successfully. Check your phone and enter your M-Pesa PIN.",
-      data: stkResponse
+      data: stkResponse,
+      pricing: pricingDetails
     });
   } catch (error) {
     if (booking) {
@@ -326,6 +530,10 @@ async function requestStkPush(req, res) {
         await createPaymentRecord({
           bookingId: booking.id,
           phoneNumber,
+          promoCode: booking.promo_code || null,
+          originalTotalAmount: booking.original_total_amount || null,
+          discountedTotalAmount: booking.total_amount || null,
+          discountAmount: booking.discount_amount || 0,
           amount: requestedAmount,
           reference: buildReference(packageSlug, requestedAmount),
           status: "Failed",

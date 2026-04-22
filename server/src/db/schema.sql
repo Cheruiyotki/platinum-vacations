@@ -45,6 +45,9 @@ CREATE TABLE IF NOT EXISTS bookings (
   customer_id INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
   package_id INTEGER NOT NULL REFERENCES packages(id) ON DELETE CASCADE,
   payment_option VARCHAR(16) NOT NULL CHECK (payment_option IN ('full', 'space')),
+  promo_code VARCHAR(40),
+  original_total_amount INTEGER NOT NULL DEFAULT 0 CHECK (original_total_amount >= 0),
+  discount_amount INTEGER NOT NULL DEFAULT 0 CHECK (discount_amount >= 0),
   total_amount INTEGER NOT NULL CHECK (total_amount >= 0),
   amount_paid INTEGER NOT NULL DEFAULT 0 CHECK (amount_paid >= 0),
   balance INTEGER NOT NULL CHECK (balance >= 0),
@@ -58,6 +61,10 @@ CREATE TABLE IF NOT EXISTS payments (
   payment_code VARCHAR(32) UNIQUE NOT NULL,
   booking_id INTEGER REFERENCES bookings(id) ON DELETE SET NULL,
   phone VARCHAR(20) NOT NULL,
+  promo_code VARCHAR(40),
+  original_total_amount INTEGER,
+  discounted_total_amount INTEGER,
+  discount_amount INTEGER NOT NULL DEFAULT 0,
   amount INTEGER NOT NULL CHECK (amount > 0),
   reference VARCHAR(64) NOT NULL,
   stk_status VARCHAR(20) NOT NULL DEFAULT 'Pending',
@@ -67,6 +74,27 @@ CREATE TABLE IF NOT EXISTS payments (
   created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE bookings
+ADD COLUMN IF NOT EXISTS promo_code VARCHAR(40);
+
+ALTER TABLE bookings
+ADD COLUMN IF NOT EXISTS original_total_amount INTEGER;
+
+ALTER TABLE bookings
+ADD COLUMN IF NOT EXISTS discount_amount INTEGER;
+
+ALTER TABLE payments
+ADD COLUMN IF NOT EXISTS promo_code VARCHAR(40);
+
+ALTER TABLE payments
+ADD COLUMN IF NOT EXISTS original_total_amount INTEGER;
+
+ALTER TABLE payments
+ADD COLUMN IF NOT EXISTS discounted_total_amount INTEGER;
+
+ALTER TABLE payments
+ADD COLUMN IF NOT EXISTS discount_amount INTEGER;
 
 CREATE TABLE IF NOT EXISTS assistant_messages (
   id SERIAL PRIMARY KEY,

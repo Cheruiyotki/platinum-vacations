@@ -17,7 +17,9 @@ function PackageCard({ travelPackage }) {
   const includedItems = Array.isArray(travelPackage.includes_json) ? travelPackage.includes_json : [];
   const excludedItems = Array.isArray(travelPackage.excludes_json) ? travelPackage.excludes_json : [];
   const [paymentOption, setPaymentOption] = useState("space");
+  const [customerName, setCustomerName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [promoCode, setPromoCode] = useState("");
   const [amount, setAmount] = useState(String(minimumBookingAmount));
   const [paymentError, setPaymentError] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
@@ -42,7 +44,9 @@ function PackageCard({ travelPackage }) {
   const openPaymentCard = () => {
     setPaymentOption("space");
     setAmount(String(minimumBookingAmount));
+    setCustomerName("");
     setPhoneNumber("");
+    setPromoCode("");
     setPaymentError("");
     setPaymentMessage("");
     setIsPaymentOpen(true);
@@ -61,6 +65,11 @@ function PackageCard({ travelPackage }) {
 
   const handlePaymentSubmit = async (event) => {
     event.preventDefault();
+
+    if (!customerName.trim()) {
+      setPaymentError("Enter the customer's name for this booking.");
+      return;
+    }
 
     if (!phoneNumber.trim()) {
       setPaymentError("Enter the Safaricom number that should receive the PIN prompt.");
@@ -81,11 +90,23 @@ function PackageCard({ travelPackage }) {
         packageSlug: travelPackage.slug,
         paymentOption,
         amount: Math.round(parsedAmount),
-        phoneNumber
+        phoneNumber,
+        customerName: customerName.trim(),
+        promoCode: promoCode.trim()
       });
 
+      const pricing = response?.pricing;
+      const promoLine =
+        pricing?.promoCode
+          ? ` Promo applied: ${pricing.promoCode}. Discount: KES ${Number(pricing.discountAmount || 0).toLocaleString()}.`
+          : "";
+      const totalsLine =
+        pricing?.discountedTotalAmount
+          ? ` Total due: KES ${Number(pricing.discountedTotalAmount).toLocaleString()}. Remaining balance: KES ${Number(pricing.remainingBalance || 0).toLocaleString()}.`
+          : "";
+
       setPaymentMessage(
-        response.message || "STK push sent successfully. Check your phone and enter your M-Pesa PIN."
+        `${response.message || "STK push sent successfully. Check your phone and enter your M-Pesa PIN."}${promoLine}${totalsLine}`
       );
     } catch (error) {
       setPaymentError(error.message || "Failed to send the M-Pesa prompt.");
@@ -286,6 +307,21 @@ function PackageCard({ travelPackage }) {
                   <div className="grid gap-4">
                   <label className="block">
                     <span className="text-sm font-semibold uppercase tracking-[0.2em] text-secondary/55">
+                      Customer Name
+                    </span>
+                    <input
+                      value={customerName}
+                      onChange={(event) => {
+                        setCustomerName(event.target.value);
+                        setPaymentError("");
+                        setPaymentMessage("");
+                      }}
+                      className="mt-2 w-full rounded-2xl border border-neutral bg-accent px-4 py-3 text-base font-semibold text-secondary outline-none transition focus:border-primary"
+                      placeholder="Enter your name"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-sm font-semibold uppercase tracking-[0.2em] text-secondary/55">
                       Enter Amount
                     </span>
                     <input
@@ -318,6 +354,25 @@ function PackageCard({ travelPackage }) {
                       className="mt-2 w-full rounded-2xl border border-neutral bg-accent px-4 py-3 text-base font-semibold text-secondary outline-none transition focus:border-primary"
                       placeholder="07XXXXXXXX"
                     />
+                  </label>
+
+                  <label className="block">
+                    <span className="text-sm font-semibold uppercase tracking-[0.2em] text-secondary/55">
+                      Promo Code (Optional)
+                    </span>
+                    <input
+                      value={promoCode}
+                      onChange={(event) => {
+                        setPromoCode(event.target.value.toUpperCase());
+                        setPaymentError("");
+                        setPaymentMessage("");
+                      }}
+                      className="mt-2 w-full rounded-2xl border border-neutral bg-accent px-4 py-3 text-base font-semibold text-secondary outline-none transition focus:border-primary"
+                      placeholder="e.g. MARA10"
+                    />
+                    <p className="mt-2 text-xs font-semibold text-secondary/55">
+                      Promo codes are confirmed by the server when you submit.
+                    </p>
                   </label>
                   </div>
 
