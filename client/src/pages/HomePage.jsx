@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { DEFAULT_SITE_CONTENT, fetchSiteContent } from "../api/site";
 import AboutSection from "../components/AboutSection";
 import Footer from "../components/Footer";
 import HeroSection from "../components/HeroSection";
@@ -8,6 +10,24 @@ import PaymentInfoSection from "../components/PaymentInfoSection";
 import TravelAssistant from "../components/TravelAssistant";
 
 function HomePage() {
+  const [siteContent, setSiteContent] = useState(DEFAULT_SITE_CONTENT);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchSiteContent()
+      .then((content) => {
+        if (isMounted) {
+          setSiteContent(content);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const scrollToSection = (sectionId) => {
     const target = document.getElementById(sectionId);
     if (target) {
@@ -20,12 +40,16 @@ function HomePage() {
       <Navbar onNavigate={scrollToSection} />
       <main>
         <HeroSection onViewPackages={() => scrollToSection("packages")} />
-        <AboutSection />
+        <AboutSection aboutText={siteContent.aboutText} />
         <PackagesSection />
-        <PaymentInfoSection />
+        <PaymentInfoSection paymentInstructions={siteContent.paymentInstructions} />
         <InstagramFeedSection />
       </main>
-      <Footer />
+      <Footer
+        contactPhones={siteContent.contactPhones}
+        footerEmail={siteContent.footerEmail}
+        footerLinks={siteContent.footerLinks}
+      />
       <TravelAssistant />
     </div>
   );

@@ -4,7 +4,7 @@ import { createReview } from "../api/reviews";
 import { usePackages } from "../context/PackageContext";
 import { useReviews } from "../context/ReviewContext";
 
-function PaymentInfoSection() {
+function PaymentInfoSection({ paymentInstructions = "Secure your slot with a flexible payment plan." }) {
   const { packages } = usePackages();
   const { reviews, loading: reviewsLoading, error: reviewsError, refreshReviews } = useReviews();
   const [reviewForm, setReviewForm] = useState({
@@ -59,7 +59,7 @@ function PaymentInfoSection() {
                 Easy Booking with Lipa Mdogo Mdogo
               </h2>
               <p className="mt-3 text-sm text-white/80">
-                Secure your slot with a flexible payment plan.
+                {paymentInstructions}
               </p>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">

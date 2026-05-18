@@ -21,6 +21,7 @@ import {
 } from "../api/reviews";
 import {
   FaArrowLeft,
+  FaArrowDown,
   FaArrowUp,
   FaBars,
   FaBell,
@@ -48,6 +49,7 @@ import {
 import { Link } from "react-router-dom";
 import { usePackages } from "../context/PackageContext";
 import { useReviews } from "../context/ReviewContext";
+import { handleAssetImageError } from "../utils/imageFallback";
 
 const sidebarSections = [
   { id: "dashboard", label: "Dashboard", icon: FaChartLine },
@@ -1438,8 +1440,18 @@ function AdminPage() {
               <div className="mt-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
                 {galleryItems.map((item) => (
                   <article key={item.id} className="rounded-3xl border border-neutral bg-accent p-4">
-                    <div className="rounded-2xl bg-secondary/5 px-4 py-12 text-center text-sm text-secondary/60">
-                      {item.src}
+                    <div className="overflow-hidden rounded-2xl border border-neutral bg-secondary/5">
+                      <img
+                        src={item.src}
+                        alt={`${item.location} gallery preview`}
+                        className="aspect-[4/3] w-full object-cover"
+                        onError={(event) =>
+                          handleAssetImageError(
+                            event,
+                            "https://images.unsplash.com/photo-1526779259212-939e64788e3c?auto=format&fit=crop&w=800&q=80"
+                          )
+                        }
+                      />
                     </div>
                     <div className="mt-4 flex items-start justify-between gap-4">
                       <div>
@@ -1459,6 +1471,15 @@ function AdminPage() {
                       >
                         <FaArrowUp />
                         Move Up
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveGalleryItem(item.id, "down")}
+                        disabled={dashboardActionLoading}
+                        className="inline-flex items-center gap-2 rounded-full border border-neutral px-3 py-2 text-xs font-bold text-secondary transition hover:border-primary hover:text-primary"
+                      >
+                        <FaArrowDown />
+                        Move Down
                       </button>
                       <button
                         type="button"

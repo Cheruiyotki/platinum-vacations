@@ -1,9 +1,43 @@
 import { FaInstagram, FaPhoneAlt, FaTiktok, FaWhatsapp } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 
-const phones = ["0740629899", "0768070634", "0711757863"];
+function parseList(value) {
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 
-function Footer() {
+function toWhatsAppNumber(phone) {
+  const digits = phone.replace(/\D/g, "");
+
+  if (digits.startsWith("0")) {
+    return `254${digits.slice(1)}`;
+  }
+
+  return digits;
+}
+
+function getFooterIcon(label) {
+  const normalizedLabel = label.toLowerCase();
+
+  if (normalizedLabel.includes("whatsapp")) {
+    return <FaWhatsapp />;
+  }
+
+  if (normalizedLabel.includes("tiktok")) {
+    return <FaTiktok />;
+  }
+
+  return <FaInstagram />;
+}
+
+function Footer({ contactPhones = "", footerEmail = "", footerLinks = "" }) {
+  const phones = parseList(contactPhones);
+  const links = parseList(footerLinks);
+  const primaryPhone = phones[0] || "";
+  const whatsappNumber = primaryPhone ? toWhatsAppNumber(primaryPhone) : "";
+
   return (
     <footer className="bg-primary py-12 text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 md:grid-cols-3 md:px-6">
@@ -26,21 +60,23 @@ function Footer() {
                 </a>
               </li>
             ))}
-            <li className="flex items-center gap-3">
-              <FaWhatsapp className="text-white/85" />
-              <a
-                href="https://wa.me/254740629899"
-                target="_blank"
-                rel="noreferrer"
-                className="hover:underline"
-              >
-                WhatsApp: 0740629899
-              </a>
-            </li>
+            {whatsappNumber ? (
+              <li className="flex items-center gap-3">
+                <FaWhatsapp className="text-white/85" />
+                <a
+                  href={`https://wa.me/${whatsappNumber}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:underline"
+                >
+                  WhatsApp: {primaryPhone}
+                </a>
+              </li>
+            ) : null}
             <li className="flex items-center gap-3">
               <MdEmail className="text-base text-white/85" />
-              <a href="mailto:platinumvacationske@gmail.com" className="hover:underline">
-                platinumvacationske@gmail.com
+              <a href={`mailto:${footerEmail}`} className="hover:underline">
+                {footerEmail}
               </a>
             </li>
           </ul>
@@ -49,21 +85,12 @@ function Footer() {
         <div>
           <h4 className="font-heading text-xl font-bold">Follow Us</h4>
           <ul className="mt-4 space-y-3 text-sm">
-            <li className="flex items-center gap-3">
-              <FaInstagram />
-              <a
-                href="https://www.instagram.com/wathways_tours/"
-                target="_blank"
-                rel="noreferrer"
-                className="hover:underline"
-              >
-                Instagram
-              </a>
-            </li>
-            <li className="flex items-center gap-3">
-              <FaTiktok />
-              <span>TikTok: platinum__vacations</span>
-            </li>
+            {links.map((link) => (
+              <li key={link} className="flex items-center gap-3">
+                {getFooterIcon(link)}
+                <span>{link}</span>
+              </li>
+            ))}
           </ul>
         </div>
       </div>
