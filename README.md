@@ -124,7 +124,56 @@ Place provided source images inside:
 
 The UI is prewired to these asset paths and includes fallback imagery if files are missing.
 
-## 6) API Endpoint
+## 6) Admin Section
+
+Open the admin workspace at:
+
+```text
+http://localhost:5173/admin
+```
+
+Use the **Back To Website** button to return to the public site. The admin screen is organized with a left navigation on desktop and a **Menu** button on mobile.
+
+The admin section works like this:
+
+- **Dashboard** shows booking totals, pending balances, upcoming visible adventures, recent messages, and STK push health.
+- **Adventures** creates, edits, hides, shows, and deletes travel packages. Visible adventures appear on the public packages section; hidden ones stay available in admin only.
+- **Bookings** lists customer bookings created from payment activity, including the adventure, booking option, amount paid, balance, phone, and status.
+- **Payments** tracks M-Pesa/STK records, payment references, success/pending/failed status, and remaining balances.
+- **Customers** shows customer profiles, latest booked adventure, progress, phone, and notes.
+- **Reviews** approves, unapproves, or removes submitted testimonials. Only approved reviews appear on the public website.
+- **Gallery** previews homepage gallery images, hides or shows them, and moves them up or down in the public display order.
+- **Messages / AI** summarizes recent assistant or customer message topics so admins can see common questions and unanswered requests.
+- **Content** updates public website copy for the About section, contact phones, footer email, payment instructions, and footer links.
+- **Announcements** creates admin-managed notices with Draft, Active, or Sold Out status.
+- **Promo Codes** creates seasonal offer codes and marks them Active or Paused.
+- **Reports** shows booking and payment-performance snapshots generated from current booking data.
+
+Admin data is stored in PostgreSQL. Run the migration/seed before using the dashboard:
+
+```bash
+npm run db:migrate --prefix server
+```
+
+The admin UI calls these backend areas:
+
+- `GET /api/admin/dashboard`
+- `GET /api/packages/admin`
+- `POST /api/packages`, `PUT /api/packages/:id`, `PATCH /api/packages/:id/visibility`, `DELETE /api/packages/:id`
+- `GET /api/reviews/admin`, `PATCH /api/reviews/:id/approval`, `DELETE /api/reviews/:id`
+- `PUT /api/admin/content`
+- `POST /api/admin/announcements`
+- `POST /api/admin/promos`
+- `PATCH /api/admin/gallery/:id/visibility`
+- `POST /api/admin/gallery/reorder`
+
+The project currently exposes `/admin` and the admin API without a built-in login screen. Before deploying publicly, protect the admin route and admin API with your host, reverse proxy, or an authentication layer.
+
+## 7) API Endpoints
 
 - `GET /api/packages` -> returns seeded travel packages with includes/excludes JSON arrays and deposit requirements.
 - `POST /api/payments/stk-push` -> sends a Safaricom STK Push prompt to the selected phone number.
+- `GET /api/reviews` -> returns approved public reviews.
+- `POST /api/reviews` -> submits a review for admin approval.
+- `GET /api/site/gallery` -> returns visible public gallery items.
+- `GET /api/site/content` -> returns public site copy managed from admin.
