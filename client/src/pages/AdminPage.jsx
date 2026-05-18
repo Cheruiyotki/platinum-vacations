@@ -955,19 +955,21 @@ function AdminPage() {
                 </p>
               ) : null}
 
-              <div className="mt-6 grid w-full min-w-0 grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:grid-cols-3 2xl:grid-cols-5">
+              <div className="mt-6 grid w-full min-w-0 grid-cols-3 gap-2 min-[420px]:gap-3 sm:gap-4 2xl:grid-cols-5">
                 {dashboardStats.map((stat) => {
                   const Icon = stat.icon;
 
                   return (
-                    <article key={stat.label} className="box-border w-full min-w-0 rounded-3xl bg-secondary px-5 py-5 text-white shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-[0.22em] text-white/60">
+                    <article key={stat.label} className="box-border w-full min-w-0 rounded-3xl bg-secondary px-2.5 py-3 text-white shadow-sm min-[420px]:px-3 min-[420px]:py-4 sm:px-5 sm:py-5">
+                      <div className="flex min-w-0 items-start justify-between gap-1.5">
+                        <span className="min-w-0 break-words text-[9px] font-bold uppercase leading-snug tracking-[0.08em] text-white/60 min-[420px]:text-[10px] sm:text-xs sm:tracking-[0.22em]">
                           {stat.label}
                         </span>
-                        <Icon className="text-success" />
+                        <Icon className="shrink-0 text-xs text-success min-[420px]:text-sm sm:text-base" />
                       </div>
-                      <p className="mt-4 font-heading text-4xl font-black">{stat.value}</p>
+                      <p className="mt-3 break-words font-heading text-2xl font-black leading-none min-[420px]:text-3xl sm:mt-4 sm:text-4xl">
+                        {stat.value}
+                      </p>
                     </article>
                   );
                 })}
