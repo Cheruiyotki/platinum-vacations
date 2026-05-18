@@ -793,10 +793,10 @@ function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral/40">
-      <div className="mx-auto flex min-h-screen max-w-[96rem] flex-col px-4 py-6 md:px-6 lg:px-8 xl:h-screen xl:overflow-hidden">
+    <div className="min-h-screen w-full overflow-x-hidden bg-neutral/40">
+      <div className="mx-auto box-border flex min-h-screen w-full max-w-[96rem] flex-col px-4 py-6 md:px-6 lg:px-8 xl:h-screen xl:overflow-hidden">
         <header
-          className={`sticky top-0 z-[60] overflow-hidden rounded-[2rem] bg-secondary text-white shadow-card transition-[margin,padding] duration-300 ease-in-out ${
+          className={`sticky top-0 z-[60] w-full box-border overflow-hidden rounded-[2rem] bg-secondary text-white shadow-card transition-[margin,padding] duration-300 ease-in-out ${
             isHeaderCollapsed ? "mb-3 px-3 py-3 md:px-4 md:py-3" : "mb-6 px-5 py-6 md:px-8 md:py-8"
           }`}
         >
@@ -897,9 +897,9 @@ function AdminPage() {
           </div>
         ) : null}
 
-        <div className="grid flex-1 min-h-0 gap-6 xl:grid-cols-[18rem_1fr]">
+        <div className="grid min-h-0 w-full min-w-0 flex-1 gap-6 xl:grid-cols-[18rem_1fr]">
           <aside className="hidden min-h-0 space-y-4 overflow-y-auto xl:block">
-            <div className="rounded-[1.75rem] border border-neutral bg-white p-4 shadow-sm">
+            <div className="box-border w-full min-w-0 rounded-[1.75rem] border border-neutral bg-white p-4 shadow-sm">
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">
                 Admin Navigation
               </p>
@@ -926,8 +926,8 @@ function AdminPage() {
             </div>
           </aside>
 
-          <main ref={mainScrollRef} className="min-h-0 space-y-6 xl:overflow-y-auto">
-            <section id="dashboard" className="rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
+          <main ref={mainScrollRef} className="min-h-0 w-full min-w-0 space-y-6 xl:overflow-y-auto">
+            <section id="dashboard" className="box-border w-full min-w-0 rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
               <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">
@@ -955,12 +955,12 @@ function AdminPage() {
                 </p>
               ) : null}
 
-              <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 2xl:grid-cols-5">
+              <div className="mt-6 grid w-full min-w-0 grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:grid-cols-3 2xl:grid-cols-5">
                 {dashboardStats.map((stat) => {
                   const Icon = stat.icon;
 
                   return (
-                    <article key={stat.label} className="rounded-3xl bg-secondary px-5 py-5 text-white shadow-sm">
+                    <article key={stat.label} className="box-border w-full min-w-0 rounded-3xl bg-secondary px-5 py-5 text-white shadow-sm">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold uppercase tracking-[0.22em] text-white/60">
                           {stat.label}
@@ -973,13 +973,13 @@ function AdminPage() {
                 })}
               </div>
 
-              <div className="mt-6 grid gap-4 lg:grid-cols-2">
-                <div className="rounded-3xl border border-neutral bg-accent p-5">
+              <div className="mt-6 grid w-full min-w-0 gap-4 lg:grid-cols-2">
+                <div className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-secondary/50">
                     Payment Health
                   </p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-2xl bg-success/15 px-4 py-4">
+                    <div className="box-border w-full min-w-0 rounded-2xl bg-success/15 px-4 py-4">
                       <p className="text-xs font-bold uppercase tracking-[0.22em] text-secondary/55">
                         Successful STK
                       </p>
@@ -987,7 +987,7 @@ function AdminPage() {
                         {payments.filter((payment) => payment.stkStatus === "Success").length}
                       </p>
                     </div>
-                    <div className="rounded-2xl bg-primary/10 px-4 py-4">
+                    <div className="box-border w-full min-w-0 rounded-2xl bg-primary/10 px-4 py-4">
                       <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary/70">
                         Pending
                       </p>
@@ -995,7 +995,7 @@ function AdminPage() {
                         {payments.filter((payment) => payment.stkStatus === "Pending").length}
                       </p>
                     </div>
-                    <div className="rounded-2xl bg-neutral px-4 py-4">
+                    <div className="box-border w-full min-w-0 rounded-2xl bg-neutral px-4 py-4">
                       <p className="text-xs font-bold uppercase tracking-[0.22em] text-secondary/55">
                         Failed
                       </p>
@@ -1006,13 +1006,13 @@ function AdminPage() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl border border-neutral bg-accent p-5">
+                <div className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-secondary/50">
                     Recent Message Highlights
                   </p>
                   <div className="mt-4 space-y-3">
                     {messages.slice(0, 3).map((message) => (
-                      <div key={message.id} className="rounded-2xl border border-neutral bg-white px-4 py-3">
+                      <div key={message.id} className="box-border w-full min-w-0 rounded-2xl border border-neutral bg-white px-4 py-3">
                         <div className="flex items-center justify-between gap-3">
                           <p className="font-semibold text-secondary">{message.topic}</p>
                           <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(message.unanswered ? "Pending" : "Success")}`}>
@@ -1027,7 +1027,7 @@ function AdminPage() {
               </div>
             </section>
 
-            <section id="adventures" className="rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
+            <section id="adventures" className="box-border w-full min-w-0 rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">
@@ -1048,8 +1048,8 @@ function AdminPage() {
                 </button>
               </div>
 
-              <div className="mt-6 grid gap-6 2xl:grid-cols-[1.1fr_0.9fr]">
-                <div className="rounded-3xl border border-neutral bg-accent p-5">
+              <div className="mt-6 grid w-full min-w-0 gap-6 2xl:grid-cols-[1.1fr_0.9fr]">
+                <div className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                   <div className="flex items-center justify-between gap-4">
                     <p className="font-heading text-2xl font-black text-secondary">
                       {selectedAdventureId ? "Edit Adventure" : "Create Adventure"}
@@ -1078,7 +1078,7 @@ function AdminPage() {
                     </p>
                   ) : null}
 
-                  <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <div className="mt-5 grid w-full min-w-0 gap-4 md:grid-cols-2">
                     <label className="block">
                       <span className="text-xs font-bold uppercase tracking-[0.22em] text-secondary/55">Title</span>
                       <input
@@ -1228,14 +1228,14 @@ function AdminPage() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl border border-neutral bg-accent p-5">
+                <div className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                   <p className="font-heading text-2xl font-black text-secondary">Adventure List</p>
                   {adminLoading ? (
                     <p className="mt-5 text-sm text-secondary/70">Loading adventures...</p>
                   ) : null}
                   <div className="mt-5 space-y-3">
                     {adventures.map((adventure) => (
-                      <article key={adventure.id} className="rounded-3xl border border-neutral bg-white p-4 shadow-sm">
+                      <article key={adventure.id} className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-white p-4 shadow-sm">
                         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                           <div>
                             <div className="flex flex-wrap items-center gap-2">
@@ -1285,7 +1285,7 @@ function AdminPage() {
               </div>
             </section>
 
-            <section id="bookings" className="rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
+            <section id="bookings" className="box-border w-full min-w-0 rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">Bookings</p>
               <h2 className="mt-2 font-heading text-3xl font-black text-secondary">Booking Records</h2>
               <div className="mt-6 overflow-x-auto">
@@ -1324,19 +1324,19 @@ function AdminPage() {
               </div>
             </section>
 
-            <section id="payments" className="rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
+            <section id="payments" className="box-border w-full min-w-0 rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">Payments</p>
               <h2 className="mt-2 font-heading text-3xl font-black text-secondary">M-Pesa / STK Tracking</h2>
-              <div className="mt-6 grid gap-4 xl:grid-cols-2">
+              <div className="mt-6 grid w-full min-w-0 gap-4 xl:grid-cols-2">
                 {payments.map((payment) => (
-                  <article key={payment.id} className="rounded-3xl border border-neutral bg-accent p-5">
+                  <article key={payment.id} className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-semibold text-secondary">{payment.reference}</p>
                       <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(payment.stkStatus)}`}>
                         {payment.stkStatus}
                       </span>
                     </div>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div className="mt-4 grid w-full min-w-0 gap-3 sm:grid-cols-2">
                       <div>
                         <p className="text-xs font-bold uppercase tracking-[0.22em] text-secondary/50">Phone</p>
                         <p className="mt-1 text-sm text-secondary/80">{payment.phone}</p>
@@ -1361,12 +1361,12 @@ function AdminPage() {
               </div>
             </section>
 
-            <section id="customers" className="rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
+            <section id="customers" className="box-border w-full min-w-0 rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">Customers</p>
               <h2 className="mt-2 font-heading text-3xl font-black text-secondary">Customer Profiles</h2>
-              <div className="mt-6 grid gap-4 lg:grid-cols-2">
+              <div className="mt-6 grid w-full min-w-0 gap-4 lg:grid-cols-2">
                 {customers.map((customer) => (
-                  <article key={customer.id} className="rounded-3xl border border-neutral bg-accent p-5">
+                  <article key={customer.id} className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-heading text-2xl font-black text-secondary">{customer.name}</p>
                       <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(customer.progress)}`}>
@@ -1383,7 +1383,7 @@ function AdminPage() {
               </div>
             </section>
 
-            <section id="reviews" className="rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
+            <section id="reviews" className="box-border w-full min-w-0 rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">Reviews</p>
               <h2 className="mt-2 font-heading text-3xl font-black text-secondary">Moderate Testimonials</h2>
               {reviewError ? (
@@ -1399,9 +1399,9 @@ function AdminPage() {
               {reviewsLoading ? (
                 <p className="mt-4 text-sm text-secondary/70">Loading reviews...</p>
               ) : null}
-              <div className="mt-6 grid gap-4 xl:grid-cols-2">
+              <div className="mt-6 grid w-full min-w-0 gap-4 xl:grid-cols-2">
                 {reviews.map((review) => (
-                  <article key={review.id} className="rounded-3xl border border-neutral bg-accent p-5">
+                  <article key={review.id} className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-semibold text-secondary">{review.name}</p>
                         <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(review.approved ? "Active" : "Draft")}`}>
@@ -1434,13 +1434,13 @@ function AdminPage() {
               </div>
             </section>
 
-            <section id="gallery" className="rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
+            <section id="gallery" className="box-border w-full min-w-0 rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">Gallery</p>
               <h2 className="mt-2 font-heading text-3xl font-black text-secondary">Manage Website Gallery</h2>
-              <div className="mt-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-6 grid w-full min-w-0 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                 {galleryItems.map((item) => (
-                  <article key={item.id} className="rounded-3xl border border-neutral bg-accent p-4">
-                    <div className="overflow-hidden rounded-2xl border border-neutral bg-secondary/5">
+                  <article key={item.id} className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-4">
+                    <div className="box-border w-full min-w-0 overflow-hidden rounded-2xl border border-neutral bg-secondary/5">
                       <img
                         src={item.src}
                         alt={`${item.location} gallery preview`}
@@ -1496,15 +1496,15 @@ function AdminPage() {
               </div>
             </section>
 
-            <section id="messages" className="rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
+            <section id="messages" className="box-border w-full min-w-0 rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">Messages / AI Chats</p>
               <h2 className="mt-2 font-heading text-3xl font-black text-secondary">User Questions & Common Requests</h2>
-              <div className="mt-6 grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-                <div className="rounded-3xl border border-neutral bg-accent p-5">
+              <div className="mt-6 grid w-full min-w-0 gap-6 xl:grid-cols-[0.8fr_1.2fr]">
+                <div className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                   <p className="font-semibold text-secondary">Top Topics</p>
                   <div className="mt-4 space-y-3">
                     {topMessageTopics.map((topic) => (
-                      <div key={topic.topic} className="rounded-2xl border border-neutral bg-white px-4 py-3">
+                      <div key={topic.topic} className="box-border w-full min-w-0 rounded-2xl border border-neutral bg-white px-4 py-3">
                         <div className="flex items-center justify-between gap-3">
                           <p className="text-sm font-semibold text-secondary">{topic.topic}</p>
                           <span className="rounded-full bg-neutral px-3 py-1 text-xs font-bold text-secondary">
@@ -1516,11 +1516,11 @@ function AdminPage() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl border border-neutral bg-accent p-5">
+                <div className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                   <p className="font-semibold text-secondary">Recent Conversations</p>
                   <div className="mt-4 space-y-3">
                     {messages.map((message) => (
-                      <article key={message.id} className="rounded-2xl border border-neutral bg-white px-4 py-4">
+                      <article key={message.id} className="box-border w-full min-w-0 rounded-2xl border border-neutral bg-white px-4 py-4">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="rounded-full bg-neutral px-3 py-1 text-xs font-bold text-secondary">
                             {message.source}
@@ -1538,10 +1538,10 @@ function AdminPage() {
               </div>
             </section>
 
-            <section id="content" className="rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
+            <section id="content" className="box-border w-full min-w-0 rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">Content</p>
               <h2 className="mt-2 font-heading text-3xl font-black text-secondary">Edit Website Copy & Contacts</h2>
-              <div className="mt-6 grid gap-4 lg:grid-cols-2">
+              <div className="mt-6 grid w-full min-w-0 gap-4 lg:grid-cols-2">
                 <label className="block">
                   <span className="text-xs font-bold uppercase tracking-[0.22em] text-secondary/55">About Section</span>
                   <textarea
@@ -1599,11 +1599,11 @@ function AdminPage() {
               </div>
             </section>
 
-            <section id="announcements" className="rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
+            <section id="announcements" className="box-border w-full min-w-0 rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">Announcements</p>
               <h2 className="mt-2 font-heading text-3xl font-black text-secondary">Post Website Notices</h2>
-              <div className="mt-6 grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-                <div className="rounded-3xl border border-neutral bg-accent p-5">
+              <div className="mt-6 grid w-full min-w-0 gap-6 xl:grid-cols-[0.8fr_1.2fr]">
+                <div className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                   <label className="block">
                     <span className="text-xs font-bold uppercase tracking-[0.22em] text-secondary/55">Title</span>
                     <input
@@ -1644,10 +1644,10 @@ function AdminPage() {
                   </button>
                 </div>
 
-                <div className="rounded-3xl border border-neutral bg-accent p-5">
+                <div className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                   <div className="space-y-3">
                     {announcements.map((announcement) => (
-                      <article key={announcement.id} className="rounded-2xl border border-neutral bg-white px-4 py-4">
+                      <article key={announcement.id} className="box-border w-full min-w-0 rounded-2xl border border-neutral bg-white px-4 py-4">
                         <div className="flex items-center justify-between gap-3">
                           <p className="font-semibold text-secondary">{announcement.title}</p>
                           <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(announcement.status)}`}>
@@ -1662,11 +1662,11 @@ function AdminPage() {
               </div>
             </section>
 
-            <section id="promos" className="rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
+            <section id="promos" className="box-border w-full min-w-0 rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">Promo Codes</p>
               <h2 className="mt-2 font-heading text-3xl font-black text-secondary">Seasonal Offers & Discounts</h2>
-              <div className="mt-6 grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-                <div className="rounded-3xl border border-neutral bg-accent p-5">
+              <div className="mt-6 grid w-full min-w-0 gap-6 xl:grid-cols-[0.8fr_1.2fr]">
+                <div className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                   <label className="block">
                     <span className="text-xs font-bold uppercase tracking-[0.22em] text-secondary/55">Promo Code</span>
                     <input
@@ -1706,10 +1706,10 @@ function AdminPage() {
                   </button>
                 </div>
 
-                <div className="rounded-3xl border border-neutral bg-accent p-5">
+                <div className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                   <div className="space-y-3">
                     {promoCodes.map((promo) => (
-                      <article key={promo.id} className="rounded-2xl border border-neutral bg-white px-4 py-4">
+                      <article key={promo.id} className="box-border w-full min-w-0 rounded-2xl border border-neutral bg-white px-4 py-4">
                         <div className="flex items-center justify-between gap-3">
                           <p className="font-semibold text-secondary">{promo.code}</p>
                           <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(promo.status)}`}>
@@ -1724,12 +1724,12 @@ function AdminPage() {
               </div>
             </section>
 
-            <section id="reports" className="rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
+            <section id="reports" className="box-border w-full min-w-0 rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">Reports</p>
               <h2 className="mt-2 font-heading text-3xl font-black text-secondary">Performance Snapshot</h2>
-              <div className="mt-6 grid gap-4 lg:grid-cols-3">
+              <div className="mt-6 grid w-full min-w-0 gap-4 lg:grid-cols-3">
                 {reports.map((report) => (
-                  <article key={report.title} className="rounded-3xl bg-secondary px-5 py-5 text-white shadow-sm">
+                  <article key={report.title} className="box-border w-full min-w-0 rounded-3xl bg-secondary px-5 py-5 text-white shadow-sm">
                     <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/60">{report.title}</p>
                     <p className="mt-4 font-heading text-3xl font-black">{report.value}</p>
                     <p className="mt-2 text-sm text-white/70">{report.note}</p>
