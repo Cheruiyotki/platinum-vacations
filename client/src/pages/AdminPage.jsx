@@ -340,8 +340,10 @@ function AdminPage() {
   const { loading, refreshPackages } = usePackages();
   const { refreshReviews } = useReviews();
   const mainScrollRef = useRef(null);
+  const lastHeaderScrollTopRef = useRef(0);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
+  const [isMobileBackLinkVisible, setIsMobileBackLinkVisible] = useState(true);
   const [adventures, setAdventures] = useState([]);
   const [selectedAdventureId, setSelectedAdventureId] = useState("");
   const [adventureForm, setAdventureForm] = useState(getEmptyAdventureForm());
@@ -436,7 +438,20 @@ function AdminPage() {
     const updateHeaderState = () => {
       const mainScrollTop = mainScrollElement?.scrollTop ?? 0;
       const windowScrollTop = window.scrollY ?? 0;
-      setIsHeaderCollapsed(Math.max(mainScrollTop, windowScrollTop) > 50);
+      const currentScrollTop = Math.max(mainScrollTop, windowScrollTop);
+      const lastScrollTop = lastHeaderScrollTopRef.current;
+
+      setIsHeaderCollapsed(currentScrollTop > 50);
+
+      if (currentScrollTop <= 50) {
+        setIsMobileBackLinkVisible(true);
+      } else if (currentScrollTop > lastScrollTop + 6) {
+        setIsMobileBackLinkVisible(false);
+      } else if (currentScrollTop < lastScrollTop - 6) {
+        setIsMobileBackLinkVisible(true);
+      }
+
+      lastHeaderScrollTopRef.current = Math.max(currentScrollTop, 0);
     };
 
     const handleScroll = () => {
@@ -800,8 +815,14 @@ function AdminPage() {
             isHeaderCollapsed ? "mb-3 px-3 py-3 md:px-4 md:py-3" : "mb-6 px-5 py-6 md:px-8 md:py-8"
           }`}
         >
-          <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="w-full min-w-0 sm:flex-1">
+          <div
+            className={`flex transition-[gap] duration-300 ease-in-out ${
+              isHeaderCollapsed
+                ? "flex-row items-center justify-between gap-3"
+                : "flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between"
+            }`}
+          >
+            <div className={`${isHeaderCollapsed ? "min-w-0 flex-1" : "w-full min-w-0 sm:flex-1"}`}>
               {!isHeaderCollapsed ? (
                 <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-white/75">
                   <FaRobot className="text-[10px]" />
@@ -813,7 +834,14 @@ function AdminPage() {
                   isHeaderCollapsed ? "mt-0 text-xl md:text-2xl" : "mt-4 text-3xl md:text-5xl"
                 }`}
               >
-                Platinum Vacations Admin
+                {isHeaderCollapsed ? (
+                  <>
+                    <span className="sm:hidden">Platinum</span>
+                    <span className="hidden sm:inline">Platinum Vacations Admin</span>
+                  </>
+                ) : (
+                  "Platinum Vacations Admin"
+                )}
               </h1>
               {!isHeaderCollapsed ? (
                 <p className="mt-3 w-full max-w-none text-sm text-white/75 sm:max-w-3xl md:text-base">
@@ -823,22 +851,45 @@ function AdminPage() {
               ) : null}
             </div>
 
-            <div className="button-group flex w-full flex-col items-stretch gap-3 min-[420px]:flex-row min-[420px]:flex-wrap sm:w-auto sm:items-center sm:justify-end">
+            <div
+              className={`button-group flex shrink-0 items-center justify-end transition-[gap] duration-300 ease-in-out ${
+                isHeaderCollapsed
+                  ? "w-auto flex-row gap-2"
+                  : "w-full flex-col items-stretch gap-3 min-[420px]:flex-row min-[420px]:flex-wrap sm:w-auto sm:items-center"
+              }`}
+            >
               <button
                 type="button"
                 onClick={() => setIsMobileNavOpen(true)}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-2.5 text-xs font-bold text-white transition hover:bg-white hover:text-secondary min-[420px]:w-auto sm:px-4 sm:py-3 sm:text-sm xl:hidden"
+                className={`inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/10 text-xs font-bold text-white transition hover:bg-white hover:text-secondary sm:text-sm xl:hidden ${
+                  isHeaderCollapsed
+                    ? "w-auto px-3 py-2"
+                    : "w-full px-3.5 py-2.5 min-[420px]:w-auto sm:px-4 sm:py-3"
+                }`}
                 aria-label="Open admin navigation"
               >
                 <FaBars />
-                Menu
+                <span className={isHeaderCollapsed ? "sr-only sm:not-sr-only" : ""}>Menu</span>
               </button>
               <Link
                 to="/"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-white transition hover:bg-white hover:text-secondary min-[420px]:w-auto sm:px-5 sm:py-3 sm:text-sm"
+                className={`items-center justify-center gap-2 rounded-full bg-primary text-xs font-bold text-white transition hover:bg-white hover:text-secondary sm:inline-flex sm:text-sm ${
+                  isHeaderCollapsed
+                    ? isMobileBackLinkVisible
+                      ? "inline-flex w-auto px-3 py-2"
+                      : "hidden"
+                    : "inline-flex w-full px-4 py-2.5 min-[420px]:w-auto sm:px-5 sm:py-3"
+                }`}
               >
                 <FaArrowLeft />
-                Back To Website
+                {isHeaderCollapsed ? (
+                  <>
+                    <span className="sm:hidden">Website</span>
+                    <span className="hidden sm:inline">Back To Website</span>
+                  </>
+                ) : (
+                  "Back To Website"
+                )}
               </Link>
             </div>
           </div>
