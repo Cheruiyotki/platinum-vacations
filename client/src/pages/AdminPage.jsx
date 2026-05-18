@@ -800,8 +800,8 @@ function AdminPage() {
             isHeaderCollapsed ? "mb-3 px-3 py-3 md:px-4 md:py-3" : "mb-6 px-5 py-6 md:px-8 md:py-8"
           }`}
         >
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="min-w-0 flex-1">
+          <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="w-full min-w-0 sm:flex-1">
               {!isHeaderCollapsed ? (
                 <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-white/75">
                   <FaRobot className="text-[10px]" />
@@ -816,18 +816,18 @@ function AdminPage() {
                 Platinum Vacations Admin
               </h1>
               {!isHeaderCollapsed ? (
-                <p className="mt-3 max-w-3xl text-sm text-white/75 md:text-base">
+                <p className="mt-3 w-full max-w-none text-sm text-white/75 sm:max-w-3xl md:text-base">
                   Manage bookings, payments, adventures, content, AI messages, and customer-facing
                   website sections from one place.
                 </p>
               ) : null}
             </div>
 
-            <div className="flex flex-wrap items-center justify-end gap-3">
+            <div className="button-group flex w-full flex-col items-stretch gap-3 min-[420px]:flex-row min-[420px]:flex-wrap sm:w-auto sm:items-center sm:justify-end">
               <button
                 type="button"
                 onClick={() => setIsMobileNavOpen(true)}
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-2.5 text-xs font-bold text-white transition hover:bg-white hover:text-secondary sm:px-4 sm:py-3 sm:text-sm xl:hidden"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-2.5 text-xs font-bold text-white transition hover:bg-white hover:text-secondary min-[420px]:w-auto sm:px-4 sm:py-3 sm:text-sm xl:hidden"
                 aria-label="Open admin navigation"
               >
                 <FaBars />
@@ -835,7 +835,7 @@ function AdminPage() {
               </button>
               <Link
                 to="/"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-white transition hover:bg-white hover:text-secondary sm:px-5 sm:py-3 sm:text-sm"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-white transition hover:bg-white hover:text-secondary min-[420px]:w-auto sm:px-5 sm:py-3 sm:text-sm"
               >
                 <FaArrowLeft />
                 Back To Website
