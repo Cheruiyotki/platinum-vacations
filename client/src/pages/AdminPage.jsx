@@ -19,6 +19,7 @@ import {
   fetchAdminReviews,
   toggleReviewApproval
 } from "../api/reviews";
+import { DEFAULT_SITE_CONTENT } from "../api/site";
 import {
   FaArrowLeft,
   FaArrowDown,
@@ -29,14 +30,12 @@ import {
   FaClipboardList,
   FaComments,
   FaEdit,
-  FaEnvelopeOpenText,
   FaEye,
   FaEyeSlash,
   FaFolderOpen,
   FaImage,
   FaMoneyCheckAlt,
   FaPercent,
-  FaPhoneAlt,
   FaPlus,
   FaReceipt,
   FaRobot,
@@ -66,205 +65,6 @@ const sidebarSections = [
   { id: "reports", label: "Reports", icon: FaReceipt }
 ];
 
-const initialBookings = [
-  {
-    id: "BK-1001",
-    customer: "Sharon W.",
-    adventure: "Maasai Mara Big Five Safari Adventure",
-    option: "Book space",
-    amountPaid: 8000,
-    balance: 24999,
-    phone: "0740629899",
-    status: "Pending balance"
-  },
-  {
-    id: "BK-1002",
-    customer: "Brian K.",
-    adventure: "Mount Kenya Summit Trail Adventure",
-    option: "Full amount",
-    amountPaid: 18500,
-    balance: 0,
-    phone: "0768070634",
-    status: "Confirmed"
-  },
-  {
-    id: "BK-1003",
-    customer: "Mercy N.",
-    adventure: "Mombasa (Malindi) Summer Tides Adventure",
-    option: "Book space",
-    amountPaid: 11000,
-    balance: 10999,
-    phone: "0711757863",
-    status: "Pending balance"
-  },
-  {
-    id: "BK-1004",
-    customer: "Kelvin T.",
-    adventure: "Mt. Satima Sunrise Hike Adventure",
-    option: "Full amount",
-    amountPaid: 4500,
-    balance: 0,
-    phone: "0798001122",
-    status: "Confirmed"
-  },
-  {
-    id: "BK-1005",
-    customer: "Faith G.",
-    adventure: "WRC (World Rally Championship) Naivasha Experience",
-    option: "Book space",
-    amountPaid: 2000,
-    balance: 1800,
-    phone: "0700123456",
-    status: "Awaiting payment"
-  }
-];
-
-const initialPayments = [
-  {
-    id: "PAY-2001",
-    phone: "0740629899",
-    amount: 8000,
-    reference: "MARA8000",
-    stkStatus: "Success",
-    balance: 24999
-  },
-  {
-    id: "PAY-2002",
-    phone: "0768070634",
-    amount: 18500,
-    reference: "KENYA18500",
-    stkStatus: "Success",
-    balance: 0
-  },
-  {
-    id: "PAY-2003",
-    phone: "0711757863",
-    amount: 11000,
-    reference: "MOMB11000",
-    stkStatus: "Pending",
-    balance: 10999
-  },
-  {
-    id: "PAY-2004",
-    phone: "0798001122",
-    amount: 4500,
-    reference: "SAT4500",
-    stkStatus: "Success",
-    balance: 0
-  },
-  {
-    id: "PAY-2005",
-    phone: "0700123456",
-    amount: 2000,
-    reference: "WRC2000",
-    stkStatus: "Failed",
-    balance: 1800
-  }
-];
-
-const initialCustomers = [
-  {
-    id: "CUS-1",
-    name: "Sharon W.",
-    phone: "0740629899",
-    bookedAdventure: "Maasai Mara Big Five Safari Adventure",
-    progress: "Deposit paid",
-    notes: "Requested window seat."
-  },
-  {
-    id: "CUS-2",
-    name: "Brian K.",
-    phone: "0768070634",
-    bookedAdventure: "Mount Kenya Summit Trail Adventure",
-    progress: "Fully paid",
-    notes: "Confirmed for shared room."
-  },
-  {
-    id: "CUS-3",
-    name: "Mercy N.",
-    phone: "0711757863",
-    bookedAdventure: "Mombasa (Malindi) Summer Tides Adventure",
-    progress: "Half paid",
-    notes: "Needs pickup reminder."
-  },
-  {
-    id: "CUS-4",
-    name: "Kelvin T.",
-    phone: "0798001122",
-    bookedAdventure: "Mt. Satima Sunrise Hike Adventure",
-    progress: "Fully paid",
-    notes: "Vegetarian meal preference."
-  }
-];
-
-const initialMessages = [
-  {
-    id: "MSG-1",
-    source: "Website AI",
-    topic: "Booking info",
-    summary: "Asked for dates and deposit details for Maasai Mara.",
-    unanswered: false
-  },
-  {
-    id: "MSG-2",
-    source: "Website AI",
-    topic: "Upcoming events",
-    summary: "Wanted to know which adventures are coming up next.",
-    unanswered: false
-  },
-  {
-    id: "MSG-3",
-    source: "WhatsApp",
-    topic: "Pickup point",
-    summary: "Customer asked for Nairobi meeting point confirmation.",
-    unanswered: true
-  },
-  {
-    id: "MSG-4",
-    source: "Website AI",
-    topic: "Payment issue",
-    summary: "Customer said STK push did not reach the phone.",
-    unanswered: true
-  },
-  {
-    id: "MSG-5",
-    source: "Instagram",
-    topic: "Destination suggestion",
-    summary: "Suggested adding Nanyuki or Samburu next.",
-    unanswered: false
-  }
-];
-
-const initialAnnouncements = [
-  {
-    id: "ANN-1",
-    title: "Maasai Mara Seats Filling Fast",
-    status: "Active",
-    body: "Only a few safari seats are left for the July departure."
-  },
-  {
-    id: "ANN-2",
-    title: "Mt. Satima Sunrise Special",
-    status: "Draft",
-    body: "Early bird spot offer for the next hike."
-  }
-];
-
-const initialPromoCodes = [
-  { id: "PROMO-1", code: "MARA10", discount: "10%", status: "Active" },
-  { id: "PROMO-2", code: "WEEKEND5", discount: "KES 500", status: "Paused" }
-];
-
-const initialContentState = {
-  aboutText:
-    "Platinum Vacations is based in Nyeri and specializes in carefully planned travel adventures across Kenya.",
-  contactPhones: "0740629899, 0768070634, 0711757863",
-  footerEmail: "platinumvacationske@gmail.com",
-  paymentInstructions:
-    "Customers can pay in full or reserve a space with at least half upfront and clear the balance the day before the trip.",
-  footerLinks: "Instagram, TikTok, WhatsApp"
-};
-
 function statusClasses(status) {
   const normalizedStatus = status.toLowerCase();
 
@@ -281,6 +81,14 @@ function statusClasses(status) {
   }
 
   return "bg-neutral text-secondary";
+}
+
+function StatusBadge({ status, children = status }) {
+  return (
+    <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(status)}`}>
+      {children}
+    </span>
+  );
 }
 
 function toSlug(value) {
@@ -366,7 +174,7 @@ function AdminPage() {
   const [messages, setMessages] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [promoCodes, setPromoCodes] = useState([]);
-  const [contentState, setContentState] = useState(initialContentState);
+  const [contentState, setContentState] = useState(DEFAULT_SITE_CONTENT);
   const [announcementForm, setAnnouncementForm] = useState({ title: "", status: "Draft", body: "" });
   const [promoForm, setPromoForm] = useState({ code: "", discount: "", status: "Active" });
   const [galleryItems, setGalleryItems] = useState([]);
@@ -1068,9 +876,9 @@ function AdminPage() {
                       <div key={message.id} className="box-border w-full min-w-0 rounded-2xl border border-neutral bg-white px-4 py-3">
                         <div className="flex items-center justify-between gap-3">
                           <p className="font-semibold text-secondary">{message.topic}</p>
-                          <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(message.unanswered ? "Pending" : "Success")}`}>
+                          <StatusBadge status={message.unanswered ? "Pending" : "Success"}>
                             {message.unanswered ? "Needs reply" : "Handled"}
-                          </span>
+                          </StatusBadge>
                         </div>
                         <p className="mt-2 text-sm text-secondary/70">{message.summary}</p>
                       </div>
@@ -1293,9 +1101,9 @@ function AdminPage() {
                           <div>
                             <div className="flex flex-wrap items-center gap-2">
                               <p className="font-semibold text-secondary">{adventure.title}</p>
-                              <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(adventure.hidden ? "Draft" : "Active")}`}>
+                              <StatusBadge status={adventure.hidden ? "Draft" : "Active"}>
                                 {adventure.hidden ? "Hidden" : "Visible"}
-                              </span>
+                              </StatusBadge>
                             </div>
                             <p className="mt-1 text-sm text-secondary/65">
                               {adventure.dates} | {adventure.cost}
@@ -1366,9 +1174,7 @@ function AdminPage() {
                         <td className="py-4 pr-4 text-secondary/80">KES {booking.balance.toLocaleString()}</td>
                         <td className="py-4 pr-4 text-secondary/80">{booking.phone}</td>
                         <td className="py-4">
-                          <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(booking.status)}`}>
-                            {booking.status}
-                          </span>
+                          <StatusBadge status={booking.status} />
                         </td>
                       </tr>
                     ))}
@@ -1385,9 +1191,7 @@ function AdminPage() {
                   <article key={payment.id} className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-semibold text-secondary">{payment.reference}</p>
-                      <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(payment.stkStatus)}`}>
-                        {payment.stkStatus}
-                      </span>
+                      <StatusBadge status={payment.stkStatus} />
                     </div>
                     <div className="mt-4 grid w-full min-w-0 gap-3 sm:grid-cols-2">
                       <div>
@@ -1422,9 +1226,7 @@ function AdminPage() {
                   <article key={customer.id} className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-heading text-2xl font-black text-secondary">{customer.name}</p>
-                      <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(customer.progress)}`}>
-                        {customer.progress}
-                      </span>
+                      <StatusBadge status={customer.progress} />
                     </div>
                     <div className="mt-4 space-y-2 text-sm text-secondary/80">
                       <p><span className="font-semibold">Phone:</span> {customer.phone}</p>
@@ -1457,9 +1259,9 @@ function AdminPage() {
                   <article key={review.id} className="box-border w-full min-w-0 rounded-3xl border border-neutral bg-accent p-5">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-semibold text-secondary">{review.name}</p>
-                        <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(review.approved ? "Active" : "Draft")}`}>
+                        <StatusBadge status={review.approved ? "Active" : "Draft"}>
                           {review.approved ? "Approved" : "Pending"}
-                        </span>
+                        </StatusBadge>
                       </div>
                     <p className="mt-3 text-sm leading-7 text-secondary/78">{review.review_text}</p>
                       <div className="mt-4 flex flex-wrap gap-2">
@@ -1511,9 +1313,9 @@ function AdminPage() {
                         <p className="font-semibold text-secondary">{item.location}</p>
                         <p className="mt-1 text-sm text-secondary/65">{item.visible ? "Visible on homepage" : "Hidden from homepage"}</p>
                       </div>
-                      <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(item.visible ? "Active" : "Draft")}`}>
+                      <StatusBadge status={item.visible ? "Active" : "Draft"}>
                         {item.visible ? "Visible" : "Hidden"}
-                      </span>
+                      </StatusBadge>
                     </div>
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button
@@ -1578,9 +1380,9 @@ function AdminPage() {
                           <span className="rounded-full bg-neutral px-3 py-1 text-xs font-bold text-secondary">
                             {message.source}
                           </span>
-                          <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(message.unanswered ? "Pending" : "Success")}`}>
+                          <StatusBadge status={message.unanswered ? "Pending" : "Success"}>
                             {message.unanswered ? "Unanswered" : "Answered"}
-                          </span>
+                          </StatusBadge>
                         </div>
                         <p className="mt-3 font-semibold text-secondary">{message.topic}</p>
                         <p className="mt-2 text-sm text-secondary/72">{message.summary}</p>
@@ -1703,9 +1505,7 @@ function AdminPage() {
                       <article key={announcement.id} className="box-border w-full min-w-0 rounded-2xl border border-neutral bg-white px-4 py-4">
                         <div className="flex items-center justify-between gap-3">
                           <p className="font-semibold text-secondary">{announcement.title}</p>
-                          <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(announcement.status)}`}>
-                            {announcement.status}
-                          </span>
+                          <StatusBadge status={announcement.status} />
                         </div>
                         <p className="mt-2 text-sm text-secondary/72">{announcement.body}</p>
                       </article>
@@ -1765,9 +1565,7 @@ function AdminPage() {
                       <article key={promo.id} className="box-border w-full min-w-0 rounded-2xl border border-neutral bg-white px-4 py-4">
                         <div className="flex items-center justify-between gap-3">
                           <p className="font-semibold text-secondary">{promo.code}</p>
-                          <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClasses(promo.status)}`}>
-                            {promo.status}
-                          </span>
+                          <StatusBadge status={promo.status} />
                         </div>
                         <p className="mt-2 text-sm text-secondary/72">Discount: {promo.discount}</p>
                       </article>
