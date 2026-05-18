@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   createAnnouncement as createAnnouncementRequest,
   createPromoCode as createPromoCodeRequest,
@@ -22,6 +22,7 @@ import {
 import {
   FaArrowLeft,
   FaArrowUp,
+  FaBars,
   FaBell,
   FaChartLine,
   FaClipboardList,
@@ -336,6 +337,9 @@ function parseList(text) {
 function AdminPage() {
   const { loading, refreshPackages } = usePackages();
   const { refreshReviews } = useReviews();
+  const mainScrollRef = useRef(null);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
   const [adventures, setAdventures] = useState([]);
   const [selectedAdventureId, setSelectedAdventureId] = useState("");
   const [adventureForm, setAdventureForm] = useState(getEmptyAdventureForm());
@@ -422,6 +426,56 @@ function AdminPage() {
   useEffect(() => {
     loadAdminReviews();
   }, []);
+
+  useEffect(() => {
+    const mainScrollElement = mainScrollRef.current;
+    let rafId = 0;
+
+    const updateHeaderState = () => {
+      const mainScrollTop = mainScrollElement?.scrollTop ?? 0;
+      const windowScrollTop = window.scrollY ?? 0;
+      setIsHeaderCollapsed(Math.max(mainScrollTop, windowScrollTop) > 50);
+    };
+
+    const handleScroll = () => {
+      if (rafId) {
+        return;
+      }
+
+      rafId = window.requestAnimationFrame(() => {
+        rafId = 0;
+        updateHeaderState();
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    if (mainScrollElement) {
+      mainScrollElement.addEventListener("scroll", handleScroll, { passive: true });
+    }
+
+    updateHeaderState();
+
+    return () => {
+      if (rafId) {
+        window.cancelAnimationFrame(rafId);
+      }
+
+      window.removeEventListener("scroll", handleScroll);
+      if (mainScrollElement) {
+        mainScrollElement.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, []);
+
+  const handleNavigate = (sectionId) => {
+    const target = document.getElementById(sectionId);
+    if (!target) {
+      return;
+    }
+
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    setIsMobileNavOpen(false);
+  };
 
   const dashboardStats = useMemo(
     () => [
@@ -527,7 +581,11 @@ function AdminPage() {
     setAdventureStatus("");
     setSelectedAdventureId(adventure.id);
     setAdventureForm(buildAdventureForm(adventure));
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (mainScrollRef.current) {
+      mainScrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   const handleDeleteAdventure = async (adventureId) => {
@@ -734,35 +792,111 @@ function AdminPage() {
 
   return (
     <div className="min-h-screen bg-neutral/40">
-      <div className="mx-auto max-w-[96rem] px-4 py-6 md:px-6 lg:px-8">
-        <div className="mb-6 overflow-hidden rounded-[2rem] bg-secondary text-white shadow-card">
-          <div className="flex flex-col gap-6 px-5 py-6 md:px-8 md:py-8 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-white/75">
-                <FaRobot className="text-[10px]" />
-                Admin Control
-              </p>
-              <h1 className="mt-4 font-heading text-3xl font-black md:text-5xl">
+      <div className="mx-auto flex min-h-screen max-w-[96rem] flex-col px-4 py-6 md:px-6 lg:px-8 xl:h-screen xl:overflow-hidden">
+        <header
+          className={`sticky top-0 z-[60] overflow-hidden rounded-[2rem] bg-secondary text-white shadow-card transition-[margin,padding] duration-300 ease-in-out ${
+            isHeaderCollapsed ? "mb-3 px-3 py-3 md:px-4 md:py-3" : "mb-6 px-5 py-6 md:px-8 md:py-8"
+          }`}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              {!isHeaderCollapsed ? (
+                <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-white/75">
+                  <FaRobot className="text-[10px]" />
+                  Admin Control
+                </p>
+              ) : null}
+              <h1
+                className={`font-heading font-black transition-[font-size,margin] duration-300 ease-in-out ${
+                  isHeaderCollapsed ? "mt-0 text-xl md:text-2xl" : "mt-4 text-3xl md:text-5xl"
+                }`}
+              >
                 Platinum Vacations Admin
               </h1>
-              <p className="mt-3 max-w-3xl text-sm text-white/75 md:text-base">
-                Manage bookings, payments, adventures, content, AI messages, and customer-facing
-                website sections from one place.
-              </p>
+              {!isHeaderCollapsed ? (
+                <p className="mt-3 max-w-3xl text-sm text-white/75 md:text-base">
+                  Manage bookings, payments, adventures, content, AI messages, and customer-facing
+                  website sections from one place.
+                </p>
+              ) : null}
             </div>
 
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 self-start rounded-full bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-white hover:text-secondary"
-            >
-              <FaArrowLeft />
-              Back To Website
-            </Link>
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsMobileNavOpen(true)}
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-2.5 text-xs font-bold text-white transition hover:bg-white hover:text-secondary sm:px-4 sm:py-3 sm:text-sm xl:hidden"
+                aria-label="Open admin navigation"
+              >
+                <FaBars />
+                Menu
+              </button>
+              <Link
+                to="/"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-white transition hover:bg-white hover:text-secondary sm:px-5 sm:py-3 sm:text-sm"
+              >
+                <FaArrowLeft />
+                Back To Website
+              </Link>
+            </div>
           </div>
-        </div>
+        </header>
 
-        <div className="grid gap-6 xl:grid-cols-[18rem_1fr]">
-          <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
+        {isMobileNavOpen ? (
+          <div className="fixed inset-0 z-[95] bg-secondary/70 px-4 py-6 backdrop-blur-sm xl:hidden">
+            <div className="mx-auto h-full w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-white shadow-2xl">
+              <div className="flex items-center justify-between gap-4 bg-secondary px-5 py-5 text-white">
+                <div>
+                  <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-white/75">
+                    <FaRobot className="text-[10px]" />
+                    Admin Control
+                  </p>
+                  <p className="mt-3 font-heading text-2xl font-black">Navigation</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileNavOpen(false)}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-primary"
+                  aria-label="Close admin navigation"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div className="h-[calc(100%-5.75rem)] overflow-y-auto bg-accent p-4">
+                <div className="grid gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("dashboard")}
+                    className="inline-flex items-center gap-3 rounded-2xl border border-neutral bg-white px-4 py-3 text-left text-sm font-semibold text-secondary transition hover:border-primary hover:text-primary"
+                  >
+                    <FaChartLine className="text-sm" />
+                    Dashboard
+                  </button>
+                  {sidebarSections
+                    .filter((section) => section.id !== "dashboard")
+                    .map((section) => {
+                      const Icon = section.icon;
+                      return (
+                        <button
+                          key={section.id}
+                          type="button"
+                          onClick={() => handleNavigate(section.id)}
+                          className="inline-flex items-center gap-3 rounded-2xl border border-neutral bg-white px-4 py-3 text-left text-sm font-semibold text-secondary transition hover:border-primary hover:text-primary"
+                        >
+                          <Icon className="text-sm" />
+                          {section.label}
+                        </button>
+                      );
+                    })}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="grid flex-1 min-h-0 gap-6 xl:grid-cols-[18rem_1fr]">
+          <aside className="hidden min-h-0 space-y-4 overflow-y-auto xl:block">
             <div className="rounded-[1.75rem] border border-neutral bg-white p-4 shadow-sm">
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-secondary/55">
                 Admin Navigation
@@ -775,6 +909,10 @@ function AdminPage() {
                     <a
                       key={section.id}
                       href={`#${section.id}`}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        handleNavigate(section.id);
+                      }}
                       className="inline-flex items-center gap-3 rounded-2xl border border-neutral px-4 py-3 text-sm font-semibold text-secondary transition hover:border-primary hover:text-primary"
                     >
                       <Icon className="text-sm" />
@@ -786,7 +924,7 @@ function AdminPage() {
             </div>
           </aside>
 
-          <main className="space-y-6">
+          <main ref={mainScrollRef} className="min-h-0 space-y-6 xl:overflow-y-auto">
             <section id="dashboard" className="rounded-[1.75rem] border border-neutral bg-white p-5 shadow-sm md:p-6">
               <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                 <div>
@@ -815,7 +953,7 @@ function AdminPage() {
                 </p>
               ) : null}
 
-              <div className="mt-6 grid gap-4 sm:grid-cols-2 2xl:grid-cols-5">
+              <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 2xl:grid-cols-5">
                 {dashboardStats.map((stat) => {
                   const Icon = stat.icon;
 

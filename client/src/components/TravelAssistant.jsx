@@ -5,9 +5,16 @@ import { usePackages } from "../context/PackageContext";
 
 const quickPrompts = [
   "What adventures do you have?",
+  "What events are coming up next?",
+  "Any weekend trips?",
+  "What do you have in June?",
+  "What do you have in July?",
+  "Give me Maasai Mara details",
+  "What is included in Mombasa?",
+  "Where is the pickup point?",
   "How do I pay?",
-  "Where are you based?",
-  "Give me Maasai Mara details"
+  "Do you have a deposit option?",
+  "Where are you based?"
 ];
 
 const agencyContacts = {
@@ -34,6 +41,104 @@ function buildUpcomingAdventuresReply(packages) {
   return `Upcoming Platinum Vacations adventures include ${packages
     .map((travelPackage) => `${travelPackage.title} on ${travelPackage.dates}`)
     .join(", ")}. Ask me about any one of them for price, pickup point, or payment details.`;
+}
+
+function buildAdventureCardReply(travelPackage) {
+  if (!travelPackage) {
+    return "Tell me the adventure name (for example: Mombasa, Maasai Mara, Mount Kenya, or Mt. Satima) and I will share the details.";
+  }
+
+  const depositAmount = Number.isFinite(travelPackage.deposit_required)
+    ? travelPackage.deposit_required
+    : 0;
+  const pickupLine = travelPackage.pickup_point ? ` Pickup: ${travelPackage.pickup_point}.` : "";
+  const durationLine = travelPackage.duration_banner ? ` Duration: ${travelPackage.duration_banner}.` : "";
+
+  return `${travelPackage.title}: ${travelPackage.dates}, ${travelPackage.cost}.${durationLine} Book a space from KES ${depositAmount.toLocaleString()}.${pickupLine}`;
+}
+
+function buildIncludedExcludedReply(travelPackage) {
+  if (!travelPackage) {
+    return "Ask me about a specific adventure and I will list what is included and excluded.";
+  }
+
+  const includedItems = Array.isArray(travelPackage.includes_json) ? travelPackage.includes_json : [];
+  const excludedItems = Array.isArray(travelPackage.excludes_json) ? travelPackage.excludes_json : [];
+
+  const includeLine = includedItems.length ? `Includes: ${includedItems.join(", ")}.` : "Includes: details available on request.";
+  const excludeLine = excludedItems.length ? `Excludes: ${excludedItems.join(", ")}.` : "Excludes: details available on request.";
+
+  return `${travelPackage.title}. ${includeLine} ${excludeLine}`;
+}
+
+function buildWeekendReply(packages) {
+  if (!packages.length) {
+    return "I can suggest weekend adventures once the current list is loaded.";
+  }
+
+  const weekendTrips = packages.filter((travelPackage) => {
+    const pill = String(travelPackage.date_pill || "").toLowerCase();
+    const dates = String(travelPackage.dates || "").toLowerCase();
+    return pill.includes("weekend") || dates.includes("sat") || dates.includes("saturday") || dates.includes("sun") || dates.includes("sunday");
+  });
+
+  if (!weekendTrips.length) {
+    return buildUpcomingAdventuresReply(packages);
+  }
+
+  return `Weekend-friendly adventures include ${weekendTrips
+    .map((travelPackage) => `${travelPackage.title} on ${travelPackage.dates}`)
+    .join(", ")}. Ask me for details on any one of them.`;
+}
+
+function buildMonthReply(packages, monthName) {
+  if (!packages.length) {
+    return `I can help with Platinum Vacations ${monthName} events, but the current adventure list is not loaded right now.`;
+  }
+
+  const normalizedMonth = monthName.toLowerCase();
+  const matches = packages.filter((travelPackage) =>
+    String(travelPackage.dates || "").toLowerCase().includes(normalizedMonth)
+  );
+
+  if (!matches.length) {
+    return `I do not see any adventures labelled in ${monthName} right now. Current adventures include ${packages
+      .map((travelPackage) => travelPackage.title)
+      .join(", ")}.`;
+  }
+
+  return `Platinum Vacations ${monthName} adventures include ${matches
+    .map((travelPackage) => `${travelPackage.title} on ${travelPackage.dates}`)
+    .join(", ")}. Ask me about any one for price, pickup, and payment.`;
+}
+
+function buildEventTimingReply(matchedAdventure) {
+  if (matchedAdventure?.pickup_point) {
+    return `Pickup point for ${matchedAdventure.title} is ${matchedAdventure.pickup_point}. Exact meeting time is shared after booking, and most trips depart early to maximize the day.`;
+  }
+
+  return "Exact meeting time and pickup details are shared after booking. Many trips depart early to maximize the day.";
+}
+
+function buildWhatToCarryReply(message, matchedAdventure) {
+  const normalizedMessage = message.toLowerCase();
+  const slug = matchedAdventure?.slug?.toLowerCase() || "";
+
+  const base = "What to carry: National ID, water, light snacks, power bank, and a small day bag.";
+
+  if (slug.includes("mount-kenya") || slug.includes("mt-satima") || normalizedMessage.includes("hike") || normalizedMessage.includes("trek")) {
+    return `${base} For hikes: warm layers, rain jacket, hiking shoes, gloves, sunscreen, and a headlamp if it is an early start.`;
+  }
+
+  if (slug.includes("mombasa") || normalizedMessage.includes("beach") || normalizedMessage.includes("coast")) {
+    return `${base} For the coast: sunscreen, swimsuit, light clothing, slippers, and a hat.`;
+  }
+
+  if (slug.includes("maasai-mara") || normalizedMessage.includes("safari") || normalizedMessage.includes("wildlife")) {
+    return `${base} For safari: neutral clothing, a light jacket for mornings, binoculars if you have them, and a camera.`;
+  }
+
+  return `${base} Tell me which adventure you are booking and I will tailor the list.`;
 }
 
 function buildDatesAndBookingReply(packages) {
@@ -210,6 +315,22 @@ function buildAssistantReply(message, packages, matchedAdventure = findAdventure
     return buildUpcomingAdventuresReply(packages);
   }
 
+  if (normalizedMessage.includes("weekend")) {
+    return buildWeekendReply(packages);
+  }
+
+  if (normalizedMessage.includes("june")) {
+    return buildMonthReply(packages, "June");
+  }
+
+  if (normalizedMessage.includes("july")) {
+    return buildMonthReply(packages, "July");
+  }
+
+  if (normalizedMessage.includes("march")) {
+    return buildMonthReply(packages, "March");
+  }
+
   if (
     normalizedMessage.includes("date") ||
     normalizedMessage.includes("dates") ||
@@ -246,6 +367,39 @@ function buildAssistantReply(message, packages, matchedAdventure = findAdventure
     normalizedMessage.includes("deposit")
   ) {
     return "You can pay in full or book a space with at least half upfront, then clear the balance the day before the trip. M-Pesa till number: 46 19 122. The website can send an M-Pesa prompt to the customer phone number you enter.";
+  }
+
+  if (
+    normalizedMessage.includes("include") ||
+    normalizedMessage.includes("included") ||
+    normalizedMessage.includes("excludes") ||
+    normalizedMessage.includes("excluded") ||
+    normalizedMessage.includes("what is included") ||
+    normalizedMessage.includes("what's included")
+  ) {
+    return buildIncludedExcludedReply(matchedAdventure);
+  }
+
+  if (
+    normalizedMessage.includes("time") ||
+    normalizedMessage.includes("meet") ||
+    normalizedMessage.includes("meeting time") ||
+    normalizedMessage.includes("departure") ||
+    normalizedMessage.includes("leave") ||
+    normalizedMessage.includes("start time")
+  ) {
+    return buildEventTimingReply(matchedAdventure);
+  }
+
+  if (
+    normalizedMessage.includes("what to carry") ||
+    normalizedMessage.includes("what should i carry") ||
+    normalizedMessage.includes("packing") ||
+    normalizedMessage.includes("what to pack") ||
+    normalizedMessage.includes("dress code") ||
+    normalizedMessage.includes("what to wear")
+  ) {
+    return buildWhatToCarryReply(normalizedMessage, matchedAdventure);
   }
 
   if (
@@ -287,7 +441,7 @@ function buildAssistantReply(message, packages, matchedAdventure = findAdventure
   }
 
   if (matchedAdventure) {
-    return formatAdventureSummary(matchedAdventure);
+    return buildAdventureCardReply(matchedAdventure);
   }
 
   return "I can only help with Platinum Vacations information like adventures, dates, prices, payments, pickup points, and contact details.";
