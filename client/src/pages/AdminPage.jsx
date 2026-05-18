@@ -50,6 +50,10 @@ import { usePackages } from "../context/PackageContext";
 import { useReviews } from "../context/ReviewContext";
 import { handleAssetImageError } from "../utils/imageFallback";
 
+const GALLERY_PREVIEW_FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1526779259212-939e64788e3c?auto=format&fit=crop&w=800&q=80";
+const HEADER_SCROLL_DIRECTION_THRESHOLD = 6;
+
 const sidebarSections = [
   { id: "dashboard", label: "Dashboard", icon: FaChartLine },
   { id: "adventures", label: "Adventures", icon: FaFolderOpen },
@@ -253,9 +257,9 @@ function AdminPage() {
 
       if (currentScrollTop <= 50) {
         setIsMobileBackLinkVisible(true);
-      } else if (currentScrollTop > lastScrollTop + 6) {
+      } else if (currentScrollTop > lastScrollTop + HEADER_SCROLL_DIRECTION_THRESHOLD) {
         setIsMobileBackLinkVisible(false);
-      } else if (currentScrollTop < lastScrollTop - 6) {
+      } else if (currentScrollTop < lastScrollTop - HEADER_SCROLL_DIRECTION_THRESHOLD) {
         setIsMobileBackLinkVisible(true);
       }
 
@@ -1301,10 +1305,7 @@ function AdminPage() {
                         alt={`${item.location} gallery preview`}
                         className="aspect-[4/3] w-full object-cover"
                         onError={(event) =>
-                          handleAssetImageError(
-                            event,
-                            "https://images.unsplash.com/photo-1526779259212-939e64788e3c?auto=format&fit=crop&w=800&q=80"
-                          )
+                          handleAssetImageError(event, GALLERY_PREVIEW_FALLBACK_IMAGE)
                         }
                       />
                     </div>

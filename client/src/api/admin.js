@@ -1,4 +1,5 @@
 import { API_BASE } from "./base";
+import { JSON_HEADERS, readJson } from "./http";
 
 function normalizeBooking(booking, index) {
   const safeBooking = typeof booking === "object" && booking !== null ? booking : {};
@@ -206,16 +207,6 @@ function normalizeContentState(contentState) {
   };
 }
 
-async function readJson(response, fallbackMessage) {
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.message || fallbackMessage);
-  }
-
-  return data;
-}
-
 export async function fetchAdminDashboard() {
   const response = await fetch(`${API_BASE}/api/admin/dashboard`);
   const data = await readJson(response, "Could not load admin dashboard data.");
@@ -246,9 +237,7 @@ export async function toggleGalleryVisibility(itemId) {
 export async function reorderGalleryItems(itemId, direction) {
   const response = await fetch(`${API_BASE}/api/admin/gallery/reorder`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: JSON_HEADERS,
     body: JSON.stringify({ itemId, direction })
   });
   const data = await readJson(response, "Failed to reorder gallery items.");
@@ -263,9 +252,7 @@ export async function reorderGalleryItems(itemId, direction) {
 export async function createAnnouncement(payload) {
   const response = await fetch(`${API_BASE}/api/admin/announcements`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: JSON_HEADERS,
     body: JSON.stringify(payload)
   });
   const data = await readJson(response, "Failed to create announcement.");
@@ -275,9 +262,7 @@ export async function createAnnouncement(payload) {
 export async function createPromoCode(payload) {
   const response = await fetch(`${API_BASE}/api/admin/promos`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: JSON_HEADERS,
     body: JSON.stringify(payload)
   });
   const data = await readJson(response, "Failed to create promo code.");
@@ -287,9 +272,7 @@ export async function createPromoCode(payload) {
 export async function updateSiteContent(payload) {
   const response = await fetch(`${API_BASE}/api/admin/content`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: JSON_HEADERS,
     body: JSON.stringify(payload)
   });
   const data = await readJson(response, "Failed to save website content.");

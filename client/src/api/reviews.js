@@ -1,4 +1,5 @@
 import { API_BASE } from "./base";
+import { JSON_HEADERS, readJson } from "./http";
 
 function normalizeReview(review, index = 0) {
   const safeReview = typeof review === "object" && review !== null ? review : {};
@@ -16,16 +17,6 @@ function normalizeReview(review, index = 0) {
     rating: Number.isFinite(Number(safeReview.rating)) ? Number(safeReview.rating) : 5,
     approved: Boolean(safeReview.approved)
   };
-}
-
-async function readJson(response, fallbackMessage) {
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.message || fallbackMessage);
-  }
-
-  return data;
 }
 
 export async function fetchApprovedReviews() {
@@ -53,9 +44,7 @@ export async function fetchAdminReviews() {
 export async function createReview(payload) {
   const response = await fetch(`${API_BASE}/api/reviews`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: JSON_HEADERS,
     body: JSON.stringify(payload)
   });
 

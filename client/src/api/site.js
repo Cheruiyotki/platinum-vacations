@@ -1,4 +1,5 @@
 import { API_BASE } from "./base";
+import { readJson } from "./http";
 
 export const DEFAULT_SITE_CONTENT = {
   aboutText:
@@ -53,22 +54,14 @@ function normalizeSiteContent(content) {
 
 export async function fetchSiteContent() {
   const response = await fetch(`${API_BASE}/api/site/content`);
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to load site content.");
-  }
+  const data = await readJson(response, "Failed to load site content.");
 
   return normalizeSiteContent(data);
 }
 
 export async function fetchVisibleGalleryItems() {
   const response = await fetch(`${API_BASE}/api/site/gallery`);
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to load gallery items.");
-  }
+  const data = await readJson(response, "Failed to load gallery items.");
 
   if (!Array.isArray(data)) {
     throw new Error("Invalid gallery data received.");

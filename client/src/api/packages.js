@@ -1,4 +1,5 @@
 import { API_BASE } from "./base";
+import { JSON_HEADERS, readJson } from "./http";
 
 const FALLBACK_IMAGE = "/assets/image_6.webp";
 
@@ -103,17 +104,11 @@ export async function fetchAdminPackages() {
 export async function createPackage(payload) {
   const response = await fetch(`${API_BASE}/api/packages`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: JSON_HEADERS,
     body: JSON.stringify(payload)
   });
 
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to create adventure.");
-  }
+  const data = await readJson(response, "Failed to create adventure.");
 
   return normalizePackage(data, 0);
 }
@@ -121,17 +116,11 @@ export async function createPackage(payload) {
 export async function updatePackage(id, payload) {
   const response = await fetch(`${API_BASE}/api/packages/${id}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: JSON_HEADERS,
     body: JSON.stringify(payload)
   });
 
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to update adventure.");
-  }
+  const data = await readJson(response, "Failed to update adventure.");
 
   return normalizePackage(data, 0);
 }
@@ -141,11 +130,7 @@ export async function togglePackageVisibility(id) {
     method: "PATCH"
   });
 
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to update adventure visibility.");
-  }
+  const data = await readJson(response, "Failed to update adventure visibility.");
 
   return normalizePackage(data, 0);
 }
@@ -155,11 +140,5 @@ export async function deletePackage(id) {
     method: "DELETE"
   });
 
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to delete adventure.");
-  }
-
-  return data;
+  return readJson(response, "Failed to delete adventure.");
 }

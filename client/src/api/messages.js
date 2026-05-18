@@ -1,19 +1,12 @@
 import { API_BASE } from "./base";
+import { JSON_HEADERS, readJson } from "./http";
 
 export async function logAssistantMessage(payload) {
   const response = await fetch(`${API_BASE}/api/messages`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: JSON_HEADERS,
     body: JSON.stringify(payload)
   });
 
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to log assistant message.");
-  }
-
-  return data;
+  return readJson(response, "Failed to log assistant message.");
 }
