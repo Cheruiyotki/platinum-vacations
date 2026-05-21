@@ -55,6 +55,15 @@ MPESA_TRANSACTION_TYPE=CustomerBuyGoodsOnline
 
 `MPESA_CALLBACK_URL` must be a public HTTPS URL that Safaricom can reach.
 
+For the admin login, configure:
+
+```env
+ADMIN_PASSWORD=use_a_strong_admin_password
+ADMIN_SESSION_SECRET=use_a_long_random_secret
+```
+
+`ADMIN_PASSWORD` is required before the admin API will allow access.
+
 3. Install backend dependencies and run schema + seed directly against Neon:
 
 ```bash
@@ -158,6 +167,7 @@ npm run db:migrate --prefix server
 The admin UI calls these backend areas:
 
 - `GET /api/admin/dashboard`
+- `POST /api/admin/session`
 - `GET /api/packages/admin`
 - `POST /api/packages`, `PUT /api/packages/:id`, `PATCH /api/packages/:id/visibility`, `DELETE /api/packages/:id`
 - `GET /api/reviews/admin`, `PATCH /api/reviews/:id/approval`, `DELETE /api/reviews/:id`
@@ -167,7 +177,7 @@ The admin UI calls these backend areas:
 - `PATCH /api/admin/gallery/:id/visibility`
 - `POST /api/admin/gallery/reorder`
 
-The project currently exposes `/admin` and the admin API without a built-in login screen. Before deploying publicly, protect the admin route and admin API with your host, reverse proxy, or an authentication layer.
+The admin section is protected by a password login at `/admin`. The server issues a signed admin session token after a successful login, and protected admin APIs reject requests without that token.
 
 ## 7) API Endpoints
 

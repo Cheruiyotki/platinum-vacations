@@ -1,5 +1,5 @@
 import { API_BASE } from "./base";
-import { JSON_HEADERS, readJson } from "./http";
+import { JSON_HEADERS, adminHeaders, readJson, setAdminToken } from "./http";
 
 function normalizeBooking(booking, index) {
   const safeBooking = typeof booking === "object" && booking !== null ? booking : {};
@@ -208,7 +208,9 @@ function normalizeContentState(contentState) {
 }
 
 export async function fetchAdminDashboard() {
-  const response = await fetch(`${API_BASE}/api/admin/dashboard`);
+  const response = await fetch(`${API_BASE}/api/admin/dashboard`, {
+    headers: adminHeaders()
+  });
   const data = await readJson(response, "Could not load admin dashboard data.");
 
   return {
@@ -226,9 +228,22 @@ export async function fetchAdminDashboard() {
   };
 }
 
+export async function createAdminSession(password) {
+  const response = await fetch(`${API_BASE}/api/admin/session`, {
+    method: "POST",
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ password })
+  });
+  const data = await readJson(response, "Failed to sign in.");
+
+  setAdminToken(data.token);
+  return data;
+}
+
 export async function toggleGalleryVisibility(itemId) {
   const response = await fetch(`${API_BASE}/api/admin/gallery/${itemId}/visibility`, {
-    method: "PATCH"
+    method: "PATCH",
+    headers: adminHeaders()
   });
   const data = await readJson(response, "Failed to update gallery item visibility.");
   return normalizeGalleryItem(data, 0);
@@ -237,7 +252,7 @@ export async function toggleGalleryVisibility(itemId) {
 export async function reorderGalleryItems(itemId, direction) {
   const response = await fetch(`${API_BASE}/api/admin/gallery/reorder`, {
     method: "POST",
-    headers: JSON_HEADERS,
+    headers: adminHeaders(JSON_HEADERS),
     body: JSON.stringify({ itemId, direction })
   });
   const data = await readJson(response, "Failed to reorder gallery items.");
@@ -252,7 +267,7 @@ export async function reorderGalleryItems(itemId, direction) {
 export async function createAnnouncement(payload) {
   const response = await fetch(`${API_BASE}/api/admin/announcements`, {
     method: "POST",
-    headers: JSON_HEADERS,
+    headers: adminHeaders(JSON_HEADERS),
     body: JSON.stringify(payload)
   });
   const data = await readJson(response, "Failed to create announcement.");
@@ -262,7 +277,7 @@ export async function createAnnouncement(payload) {
 export async function createPromoCode(payload) {
   const response = await fetch(`${API_BASE}/api/admin/promos`, {
     method: "POST",
-    headers: JSON_HEADERS,
+    headers: adminHeaders(JSON_HEADERS),
     body: JSON.stringify(payload)
   });
   const data = await readJson(response, "Failed to create promo code.");
@@ -272,7 +287,7 @@ export async function createPromoCode(payload) {
 export async function updateSiteContent(payload) {
   const response = await fetch(`${API_BASE}/api/admin/content`, {
     method: "PUT",
-    headers: JSON_HEADERS,
+    headers: adminHeaders(JSON_HEADERS),
     body: JSON.stringify(payload)
   });
   const data = await readJson(response, "Failed to save website content.");

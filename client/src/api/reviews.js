@@ -1,5 +1,5 @@
 import { API_BASE } from "./base";
-import { JSON_HEADERS, readJson } from "./http";
+import { JSON_HEADERS, adminHeaders, readJson } from "./http";
 
 function normalizeReview(review, index = 0) {
   const safeReview = typeof review === "object" && review !== null ? review : {};
@@ -31,7 +31,9 @@ export async function fetchApprovedReviews() {
 }
 
 export async function fetchAdminReviews() {
-  const response = await fetch(`${API_BASE}/api/reviews/admin`);
+  const response = await fetch(`${API_BASE}/api/reviews/admin`, {
+    headers: adminHeaders()
+  });
   const data = await readJson(response, "Could not load admin reviews at this time.");
 
   if (!Array.isArray(data)) {
@@ -58,7 +60,8 @@ export async function createReview(payload) {
 
 export async function toggleReviewApproval(reviewId) {
   const response = await fetch(`${API_BASE}/api/reviews/${reviewId}/approval`, {
-    method: "PATCH"
+    method: "PATCH",
+    headers: adminHeaders()
   });
 
   const data = await readJson(response, "Failed to update review approval.");
@@ -67,7 +70,8 @@ export async function toggleReviewApproval(reviewId) {
 
 export async function deleteReview(reviewId) {
   const response = await fetch(`${API_BASE}/api/reviews/${reviewId}`, {
-    method: "DELETE"
+    method: "DELETE",
+    headers: adminHeaders()
   });
 
   return readJson(response, "Failed to delete review.");

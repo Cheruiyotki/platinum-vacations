@@ -1,5 +1,5 @@
 import { API_BASE } from "./base";
-import { JSON_HEADERS, readJson } from "./http";
+import { JSON_HEADERS, adminHeaders, readJson } from "./http";
 
 const FALLBACK_IMAGE = "/assets/image_6.webp";
 
@@ -86,7 +86,9 @@ export async function fetchPackages() {
 }
 
 export async function fetchAdminPackages() {
-  const response = await fetch(`${API_BASE}/api/packages/admin`);
+  const response = await fetch(`${API_BASE}/api/packages/admin`, {
+    headers: adminHeaders()
+  });
 
   if (!response.ok) {
     throw new Error("Could not load admin adventures at this time.");
@@ -104,7 +106,7 @@ export async function fetchAdminPackages() {
 export async function createPackage(payload) {
   const response = await fetch(`${API_BASE}/api/packages`, {
     method: "POST",
-    headers: JSON_HEADERS,
+    headers: adminHeaders(JSON_HEADERS),
     body: JSON.stringify(payload)
   });
 
@@ -116,7 +118,7 @@ export async function createPackage(payload) {
 export async function updatePackage(id, payload) {
   const response = await fetch(`${API_BASE}/api/packages/${id}`, {
     method: "PUT",
-    headers: JSON_HEADERS,
+    headers: adminHeaders(JSON_HEADERS),
     body: JSON.stringify(payload)
   });
 
@@ -127,7 +129,8 @@ export async function updatePackage(id, payload) {
 
 export async function togglePackageVisibility(id) {
   const response = await fetch(`${API_BASE}/api/packages/${id}/visibility`, {
-    method: "PATCH"
+    method: "PATCH",
+    headers: adminHeaders()
   });
 
   const data = await readJson(response, "Failed to update adventure visibility.");
@@ -137,7 +140,8 @@ export async function togglePackageVisibility(id) {
 
 export async function deletePackage(id) {
   const response = await fetch(`${API_BASE}/api/packages/${id}`, {
-    method: "DELETE"
+    method: "DELETE",
+    headers: adminHeaders()
   });
 
   return readJson(response, "Failed to delete adventure.");

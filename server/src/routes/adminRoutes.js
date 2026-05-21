@@ -7,8 +7,12 @@ const {
   toggleGalleryVisibility,
   updateSiteContent
 } = require("../controllers/adminController");
+const { createAdminSession, requireAdminAuth } = require("../middleware/adminAuth");
 
 const router = express.Router();
+
+router.post("/session", createAdminSession);
+router.use(requireAdminAuth);
 
 router.get("/dashboard", getDashboard);
 router.post("/announcements", createAnnouncement);

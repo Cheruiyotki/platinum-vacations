@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  createAdminSession,
   createAnnouncement as createAnnouncementRequest,
   createPromoCode as createPromoCodeRequest,
   fetchAdminDashboard,
@@ -7,6 +8,7 @@ import {
   toggleGalleryVisibility as toggleGalleryVisibilityRequest,
   updateSiteContent as updateSiteContentRequest
 } from "../api/admin";
+import { clearAdminToken, getAdminToken } from "../api/http";
 import {
   createPackage as createPackageRequest,
   deletePackage as deletePackageRequest,
@@ -153,6 +155,10 @@ function AdminPage() {
   const { refreshReviews } = useReviews();
   const mainScrollRef = useRef(null);
   const lastHeaderScrollTopRef = useRef(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(getAdminToken()));
+  const [adminPassword, setAdminPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
   const [isMobileBackLinkVisible, setIsMobileBackLinkVisible] = useState(true);
@@ -184,6 +190,39 @@ function AdminPage() {
   const [galleryItems, setGalleryItems] = useState([]);
   const [reports, setReports] = useState([]);
 
+  const handleAdminAuthFailure = (error, setError) => {
+    if (error.status !== 401 && error.status !== 503) {
+      return false;
+    }
+
+    clearAdminToken();
+    setIsAuthenticated(false);
+    setAuthError(error.message || "Admin login is required.");
+    setError(error.message || "Admin login is required.");
+    return true;
+  };
+
+  const handleAdminLogin = async (event) => {
+    event.preventDefault();
+
+    if (!adminPassword.trim()) {
+      setAuthError("Enter the admin password.");
+      return;
+    }
+
+    try {
+      setIsAuthenticating(true);
+      setAuthError("");
+      await createAdminSession(adminPassword);
+      setAdminPassword("");
+      setIsAuthenticated(true);
+    } catch (error) {
+      setAuthError(error.message || "Unable to sign in.");
+    } finally {
+      setIsAuthenticating(false);
+    }
+  };
+
   const loadAdminAdventures = async () => {
     try {
       setAdminLoading(true);
@@ -191,6 +230,10 @@ function AdminPage() {
       const data = await fetchAdminPackages();
       setAdventures(data);
     } catch (error) {
+      if (handleAdminAuthFailure(error, setAdventureError)) {
+        return;
+      }
+
       setAdventureError(error.message || "Unable to load admin adventures.");
     } finally {
       setAdminLoading(false);
@@ -198,8 +241,12 @@ function AdminPage() {
   };
 
   useEffect(() => {
-    loadAdminAdventures();
-  }, []);
+    if (isAuthenticated) {
+      loadAdminAdventures();
+    } else {
+      setAdminLoading(false);
+    }
+  }, [isAuthenticated]);
 
   const loadAdminDashboard = async () => {
     try {
@@ -216,6 +263,10 @@ function AdminPage() {
       setContentState(data.contentState);
       setReports(data.reports);
     } catch (error) {
+      if (handleAdminAuthFailure(error, setDashboardError)) {
+        return;
+      }
+
       setDashboardError(error.message || "Unable to load admin dashboard data.");
     } finally {
       setDashboardLoading(false);
@@ -223,8 +274,12 @@ function AdminPage() {
   };
 
   useEffect(() => {
-    loadAdminDashboard();
-  }, []);
+    if (isAuthenticated) {
+      loadAdminDashboard();
+    } else {
+      setDashboardLoading(false);
+    }
+  }, [isAuthenticated]);
 
   const loadAdminReviews = async () => {
     try {
@@ -233,6 +288,10 @@ function AdminPage() {
       const data = await fetchAdminReviews();
       setReviews(data);
     } catch (error) {
+      if (handleAdminAuthFailure(error, setReviewError)) {
+        return;
+      }
+
       setReviewError(error.message || "Unable to load admin reviews.");
     } finally {
       setReviewsLoading(false);
@@ -240,8 +299,12 @@ function AdminPage() {
   };
 
   useEffect(() => {
-    loadAdminReviews();
-  }, []);
+    if (isAuthenticated) {
+      loadAdminReviews();
+    } else {
+      setReviewsLoading(false);
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const mainScrollElement = mainScrollRef.current;
@@ -399,6 +462,10 @@ function AdminPage() {
       setSelectedAdventureId("");
       setAdventureForm(getEmptyAdventureForm());
     } catch (error) {
+      if (handleAdminAuthFailure(error, setAdventureError)) {
+        return;
+      }
+
       setAdventureError(error.message || "Failed to save adventure.");
     } finally {
       setAdventureActionLoading(false);
@@ -435,6 +502,10 @@ function AdminPage() {
       await refreshPackages();
       setAdventureStatus("Adventure deleted successfully.");
     } catch (error) {
+      if (handleAdminAuthFailure(error, setAdventureError)) {
+        return;
+      }
+
       setAdventureError(error.message || "Failed to delete adventure.");
     } finally {
       setAdventureActionLoading(false);
@@ -459,6 +530,10 @@ function AdminPage() {
           : "Adventure is visible on the public site again."
       );
     } catch (error) {
+      if (handleAdminAuthFailure(error, setAdventureError)) {
+        return;
+      }
+
       setAdventureError(error.message || "Failed to update adventure visibility.");
     } finally {
       setAdventureActionLoading(false);
@@ -488,6 +563,10 @@ function AdminPage() {
           : "Review moved back to pending."
       );
     } catch (error) {
+      if (handleAdminAuthFailure(error, setReviewError)) {
+        return;
+      }
+
       setReviewError(error.message || "Failed to update review approval.");
     } finally {
       setReviewActionLoading(false);
@@ -504,6 +583,10 @@ function AdminPage() {
       await refreshReviews();
       setReviewStatus("Review deleted successfully.");
     } catch (error) {
+      if (handleAdminAuthFailure(error, setReviewError)) {
+        return;
+      }
+
       setReviewError(error.message || "Failed to delete review.");
     } finally {
       setReviewActionLoading(false);
@@ -527,6 +610,10 @@ function AdminPage() {
         setDashboardStatus("Gallery order updated successfully.");
       })
       .catch((error) => {
+        if (handleAdminAuthFailure(error, setDashboardError)) {
+          return;
+        }
+
         setDashboardError(error.message || "Failed to reorder gallery items.");
       })
       .finally(() => {
@@ -555,6 +642,10 @@ function AdminPage() {
         );
       })
       .catch((error) => {
+        if (handleAdminAuthFailure(error, setDashboardError)) {
+          return;
+        }
+
         setDashboardError(error.message || "Failed to update gallery visibility.");
       })
       .finally(() => {
@@ -577,6 +668,10 @@ function AdminPage() {
       setAnnouncementForm({ title: "", status: "Draft", body: "" });
       setDashboardStatus("Announcement created successfully.");
     } catch (error) {
+      if (handleAdminAuthFailure(error, setDashboardError)) {
+        return;
+      }
+
       setDashboardError(error.message || "Failed to create announcement.");
     } finally {
       setDashboardActionLoading(false);
@@ -598,6 +693,10 @@ function AdminPage() {
       setPromoForm({ code: "", discount: "", status: "Active" });
       setDashboardStatus("Promo code created successfully.");
     } catch (error) {
+      if (handleAdminAuthFailure(error, setDashboardError)) {
+        return;
+      }
+
       setDashboardError(error.message || "Failed to create promo code.");
     } finally {
       setDashboardActionLoading(false);
@@ -613,11 +712,73 @@ function AdminPage() {
       setContentState(updatedContent);
       setDashboardStatus("Website content saved successfully.");
     } catch (error) {
+      if (handleAdminAuthFailure(error, setDashboardError)) {
+        return;
+      }
+
       setDashboardError(error.message || "Failed to save website content.");
     } finally {
       setDashboardActionLoading(false);
     }
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-neutral/40 px-4 py-8">
+        <section className="box-border w-full max-w-md rounded-[2rem] bg-secondary p-5 text-white shadow-card md:p-7">
+          <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-white/75">
+            <FaRobot className="text-[10px]" />
+            Admin Control
+          </p>
+          <h1 className="mt-5 font-heading text-3xl font-black">Platinum Admin Login</h1>
+          <p className="mt-3 text-sm leading-6 text-white/75">
+            Sign in to manage bookings, payments, adventures, reviews, gallery, and website content.
+          </p>
+
+          <form className="mt-6 space-y-4" onSubmit={handleAdminLogin}>
+            <label className="block">
+              <span className="text-xs font-bold uppercase tracking-[0.22em] text-white/60">
+                Admin Password
+              </span>
+              <input
+                type="password"
+                value={adminPassword}
+                onChange={(event) => {
+                  setAdminPassword(event.target.value);
+                  setAuthError("");
+                }}
+                className="mt-2 w-full rounded-2xl border border-white/15 bg-white px-4 py-3 text-sm text-secondary outline-none transition focus:border-primary"
+                placeholder="Enter password"
+              />
+            </label>
+
+            {authError ? (
+              <p className="rounded-2xl bg-primary/15 px-4 py-3 text-sm font-semibold text-white">
+                {authError}
+              </p>
+            ) : null}
+
+            <button
+              type="submit"
+              disabled={isAuthenticating}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-white hover:text-secondary"
+            >
+              <FaSave />
+              {isAuthenticating ? "Signing in..." : "Sign In"}
+            </button>
+          </form>
+
+          <Link
+            to="/"
+            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:bg-white hover:text-secondary"
+          >
+            <FaArrowLeft />
+            Back To Website
+          </Link>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-neutral/40">

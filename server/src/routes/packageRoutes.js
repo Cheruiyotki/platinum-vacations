@@ -7,14 +7,15 @@ const {
   togglePackageVisibility,
   updatePackage
 } = require("../controllers/packageController");
+const { requireAdminAuth } = require("../middleware/adminAuth");
 
 const router = express.Router();
 
 router.get("/", getPackages);
-router.get("/admin", getAdminPackages);
-router.post("/", createPackage);
-router.put("/:id", updatePackage);
-router.patch("/:id/visibility", togglePackageVisibility);
-router.delete("/:id", deletePackage);
+router.get("/admin", requireAdminAuth, getAdminPackages);
+router.post("/", requireAdminAuth, createPackage);
+router.put("/:id", requireAdminAuth, updatePackage);
+router.patch("/:id/visibility", requireAdminAuth, togglePackageVisibility);
+router.delete("/:id", requireAdminAuth, deletePackage);
 
 module.exports = router;
